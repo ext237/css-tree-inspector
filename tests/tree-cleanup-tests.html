@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Tree cleanup tests</title>
+  <style>.preserve { white-space: pre-wrap; } .hidden { display: none; }</style>
+</head>
+<body>
+  <div id="fixture">
+    <p class="indented">
+        Get Started
+    </p>
+    <p class="internal">hello           world</p>
+    <p class="inline">Hello <strong>Joe</strong>, welcome.</p>
+    <p class="break">First<br>Second</p>
+    <pre class="pre">
+  pre    text
+    </pre>
+    <div class="preserve">
+  preserved    text
+    </div>
+    <textarea class="textarea">
+  textarea    text
+    </textarea>
+    <style>.unused { color: red; }</style><script>globalThis.cleanupScriptRan = true;</script>
+    <template><div class="template-child">No</div></template><link rel="stylesheet" href="data:text/css,.x{}">
+    <meta name="fixture" content="x"><title>Nested title</title><base target="_self"><noscript>No script</noscript>
+    <div class="hidden">Hidden ordinary element</div>
+  </div>
+  <pre id="results">Running…</pre>
+  <script src="../lib/inspector-source.js"></script>
+  <script>
+    const assertions = [];
+    function check(condition, message) {
+      assertions.push(`${condition ? "PASS" : "FAIL"}: ${message}`);
+      if (!condition) document.documentElement.dataset.failed = "true";
+    }
+    globalThis.$0 = document.querySelector("#fixture");
+    const data = JSON.parse(eval(CSS_TREE_INSPECTOR_EXPRESSION("json")).output);
+    const root = data.rootElement;
+    const child = (className) => root.subTreeElements.find((item) => item.classes.includes(className));
+    check(child("indented").textNodes[0].text === "Get Started", "surrounding source indentation is removed");
+    check(child("internal").textNodes[0].text === "hello           world", "internal spaces are preserved");
+    check(child("inline").textNodes[0].text === "Hello " && child("inline").textNodes[1].text === ", welcome.", "meaningful inline boundary spaces are preserved");
+    check(child("break").subTreeElements.some((item) => item.tagName === "br"), "br remains in the tree");
+    check(child("pre").textNodes[0].text === document.querySelector(".pre").firstChild.nodeValue, "pre text is exact");
+    check(child("preserve").textNodes[0].text === document.querySelector(".preserve").firstChild.nodeValue, "computed whitespace-preserving text is exact");
+    check(child("textarea").textNodes[0].text === document.querySelector(".textarea").firstChild.nodeValue, "textarea text is exact");
+    check(root.textNodes.length === 0, "whitespace-only formatting nodes are omitted");
+    const tags = root.subTreeElements.map((item) => item.tagName);
+    check(["style", "script", "template", "link", "meta", "title", "base", "noscript"].every((tag) => !tags.includes(tag)), "non-rendering infrastructure elements are excluded");
+    check(Boolean(child("hidden")), "hidden ordinary elements remain inspectable");
+    check(data.outerHTML === document.querySelector("#fixture").outerHTML, "outerHTML remains unchanged");
+    document.querySelector("#results").textContent = assertions.join("\n");
+  </script>
+</body>
+</html>

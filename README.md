@@ -1,11 +1,17 @@
 # CSS Tree Inspector
 
-[![Version](https://img.shields.io/badge/version-1.3.0-blue)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.5.0-blue)](CHANGELOG.md)
 ![Chrome DevTools](https://img.shields.io/badge/Chrome-DevTools-4285F4?logo=googlechrome\&logoColor=white)
 ![Manifest V3](https://img.shields.io/badge/Manifest-V3-5f6368)
 [![License: MIT](https://img.shields.io/github/license/ext237/css-tree-inspector)](LICENSE)
 
 **A Chrome DevTools extension for extracting the HTML and CSS context needed to diagnose styling problems or share focused context with AI.**
+
+## Download
+
+**[Download the latest Chrome-ready release](https://github.com/ext237/css-tree-inspector/releases)**
+
+Download the newest `css-tree-inspector-x.y.z.zip`, extract it, then load the extracted folder through `chrome://extensions` using **Load unpacked**.
 
 ## Why CSS Tree Inspector?
 
@@ -25,6 +31,9 @@ All inspection happens locally inside Chrome DevTools.
 * Produces valid nested JSON containing attributes, dimensions, direct text nodes, computed CSS, pseudo-element data, and the selected subtree's exact outer HTML.
 * Captures authored state rules such as `:hover`, `:focus-visible`, and `:focus-within`, including states involving ancestors, siblings, and related descendants.
 * Preserves available `@media`, `@supports`, `@container`, `@layer`, and similar grouping context for captured state rules.
+* Captures relevant active and inactive media and container-query rules in each element's `conditionalCSS` array.
+* Cleans source-formatting whitespace from text nodes while preserving meaningful inline and whitespace-sensitive content.
+* Excludes non-rendering infrastructure elements from the inspection tree while retaining hidden ordinary elements and unchanged `outerHTML`.
 * Keeps reports visible when the DevTools selection changes and marks them as stale.
 * Copies reports only when you click **Copy**.
 * Supports Chrome DevTools light and dark themes.
@@ -112,6 +121,12 @@ Pseudo-element state rules are stored under the corresponding `pseudoElements.be
 
 CSS Tree Inspector does not hover, focus, click, toggle, or otherwise modify the inspected page. Authored `:visited` rules may be reported, but the extension never attempts to determine browsing history.
 
+## Conditional CSS
+
+Each element includes a `conditionalCSS` array containing relevant authored rules nested under `@media` or `@container`. Inactive media rules are retained, and `currentlyMatches` reports current `matchMedia()` applicability. Container-query applicability is left as `null` because standard page APIs do not expose a reliable equivalent. Nested media/container contexts and conditional state selectors are preserved without flattening them into unconditional CSS.
+
+Stylesheets blocked by browser cross-origin protections are reported once in `corsIssues`; CSS export includes the same diagnostic as a comment. CSS Tree Inspector does not bypass those protections.
+
 ## Privacy
 
 All inspection happens locally.
@@ -135,6 +150,7 @@ Browser-level tests are available in:
 ```text
 tests/relevance-tests.html
 tests/state-tests.html
+tests/conditional-tests.html
 ```
 
 These tests cover CSS relevance, direct and related state selectors, pseudo-elements, at-rules, structural exclusions, visited links, deduplication, and `outerHTML` behavior.

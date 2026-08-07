@@ -8,25 +8,25 @@ function Assert-True($condition, $message) {
 
 $manifest = Get-Content -Raw (Join-Path $root "manifest.json") | ConvertFrom-Json
 Assert-True ($manifest.manifest_version -eq 3) "Manifest uses version 3"
-Assert-True ($manifest.version -eq "1.3.0") "Manifest version is 1.3.0"
+Assert-True ($manifest.version -eq "1.5.0") "Manifest version is 1.5.0"
 Assert-True ($manifest.devtools_page -eq "devtools.html") "DevTools entry point is configured"
 Assert-True (-not $manifest.permissions) "No extension permissions are requested"
 
 $required = @(
     "manifest.json", "devtools.html", "devtools.js", "sidebar/sidebar.html",
     "sidebar/sidebar.css", "sidebar/sidebar.js", "lib/inspector-source.js",
-    "README.md", "CHANGELOG.md", "LICENSE", "CONTRIBUTING.md", "PRIVACY.md", "tests/relevance-tests.html", "tests/state-tests.html"
+    "README.md", "CHANGELOG.md", "LICENSE", "CONTRIBUTING.md", "PRIVACY.md", "tests/relevance-tests.html", "tests/state-tests.html", "tests/conditional-tests.html", "tests/tree-cleanup-tests.html"
 )
 foreach ($file in $required) {
     Assert-True (Test-Path (Join-Path $root $file)) "$file exists"
 }
 
 $inspector = Get-Content -Raw (Join-Path $root "lib/inspector-source.js")
-Assert-True ($inspector.Contains('const VERSION = "1.3.0"')) "JSON metadata version matches manifest"
+Assert-True ($inspector.Contains('const VERSION = "1.5.0"')) "JSON metadata version matches manifest"
 Assert-True ($inspector.Contains('getComputedStyle')) "Computed styles are inspected"
 Assert-True ($inspector.Contains('document.styleSheets')) "Accessible authored stylesheets are inspected"
 Assert-True ($inspector.Contains('document.adoptedStyleSheets')) "Constructed stylesheets are inspected"
-Assert-True ($inspector.Contains('Inaccessible imports are skipped')) "Stylesheet import access failures are isolated"
+Assert-True ($inspector.Contains('recordAccessIssue(rule.styleSheet')) "Stylesheet import access failures are isolated"
 Assert-True ($inspector.Contains('element.matches')) "Rules are matched with the browser selector engine"
 Assert-True ($inspector.Contains('getPropertyPriority')) "Important declarations participate in cascade resolution"
 Assert-True ($inspector.Contains('selectorSpecificity')) "Selector specificity participates in cascade resolution"
@@ -37,11 +37,18 @@ Assert-True ($inspector.Contains('stateTargets')) "Related-element state subject
 Assert-True ($inspector.Contains('atRuleContext')) "State rules preserve enclosing at-rule context"
 Assert-True ($inspector.Contains('authoredStateRules')) "CSS state rules are deduplicated"
 Assert-True ($inspector.Contains('authoredDeclarations')) "State declaration parsing preserves authored shorthand names"
+Assert-True ($inspector.Contains('conditionalCSS')) "Elements expose conditional CSS"
+Assert-True ($inspector.Contains('currentlyMatches')) "Media applicability is recorded"
+Assert-True ($inspector.Contains('recordAccessIssue')) "Stylesheet access failures are collected once"
+Assert-True ($inspector.Contains('cleanTextNode')) "Text-node boundary cleanup is implemented"
+Assert-True ($inspector.Contains('preservesWhitespace')) "Whitespace-sensitive contexts are detected"
+Assert-True ($inspector.Contains('NON_RENDERING_ELEMENTS')) "Infrastructure elements use a centralized exclusion set"
 Assert-True (-not $inspector.Contains('for (const name of names) output[name]')) "Raw computed styles are not dumped"
 Assert-True ($inspector.Contains('getBoundingClientRect')) "Element dimensions are inspected"
 Assert-True ($inspector.Contains('subTreeElements')) "Nested element output is implemented"
 Assert-True ($inspector.Contains('Node.TEXT_NODE')) "Direct text nodes are inspected"
-Assert-True ($inspector.Contains('"textarea"')) "Form-control text is excluded"
+Assert-True ($inspector.Contains('["input", "select", "option"]')) "Input and select text is excluded"
+Assert-True ($inspector.Contains('tagName === "pre" || tagName === "textarea"')) "Textarea whitespace is preserved"
 Assert-True ($inspector.Contains('::before') -and $inspector.Contains('::after')) "Pseudo-elements are inspected"
 Assert-True ($inspector.Contains('outerHTML: selected.outerHTML')) "JSON includes exact selected-element outerHTML"
 
@@ -53,7 +60,7 @@ $gitignore = Get-Content -Raw (Join-Path $root ".gitignore")
 Assert-True ($gitignore.Contains('/test-result.txt')) "Local test-result.txt is ignored"
 
 $changelog = Get-Content -Raw (Join-Path $root "CHANGELOG.md")
-Assert-True ($changelog.Contains('## [1.3.0]') -and $changelog.Contains('## [1.2.0]') -and $changelog.Contains('## [1.1.0]') -and $changelog.Contains('## [1.0.0]')) "Changelog contains all releases"
+Assert-True ($changelog.Contains('## [1.5.0]') -and $changelog.Contains('## [1.4.0]') -and $changelog.Contains('## [1.3.0]') -and $changelog.Contains('## [1.2.0]') -and $changelog.Contains('## [1.1.0]') -and $changelog.Contains('## [1.0.0]')) "Changelog contains all releases"
 
 $fixture = Get-Content -Raw (Join-Path $root "tests/relevance-tests.html")
 foreach ($case in @('direct declaration', 'inherited declaration', 'important and source-order', 'higher-specificity', 'inline style', 'nested custom-property', 'var fallback', 'unused custom property', 'pseudo-element')) {
@@ -70,5 +77,17 @@ Assert-True ($stateFixture.Contains('.container:focus-within .container-child'))
 Assert-True ($stateFixture.Contains('button.sibling:focus + .menu')) "State fixture covers sibling state relationships"
 Assert-True ($stateFixture.Contains('li:first-child') -and $stateFixture.Contains('li:nth-child(2)') -and $stateFixture.Contains('p:empty')) "State fixture covers structural pseudo-class exclusion"
 Assert-True (-not $inspector.Contains('.focus()') -and -not $inspector.Contains('.click()') -and -not $inspector.Contains('location.hash =')) "State discovery does not force interactive states"
+
+$conditionalFixture = Get-Content -Raw (Join-Path $root "tests/conditional-tests.html")
+foreach ($case in @('(max-width: 800px)', '(min-width: 1200px)', '@media print', '(orientation: portrait)', '(prefers-color-scheme: dark)', '(prefers-reduced-motion: reduce)', '(hover: hover)', '(pointer: coarse)', '@container sidebar', 'media,container', 'container,media')) {
+    Assert-True ($conditionalFixture.Contains($case)) "Conditional browser fixture covers $case"
+}
+
+$sidebarHtml = Get-Content -Raw (Join-Path $root "sidebar/sidebar.html")
+$sidebarCss = Get-Content -Raw (Join-Path $root "sidebar/sidebar.css")
+Assert-True ($sidebarHtml.IndexOf('id="jsonAction"') -lt $sidebarHtml.IndexOf('id="cssAction"')) "JSON action appears before CSS action"
+Assert-True ($sidebarHtml.Contains('Generate Tree JSON') -and $sidebarHtml.Contains('Generate Tree CSS')) "Action labels are updated"
+Assert-True ($sidebarHtml.Contains('id="resultViewer"') -and $sidebarHtml.Contains('hidden')) "Result controls start hidden"
+Assert-True ($sidebarCss.Contains('.actions { display: flex')) "Primary actions use side-by-side flex layout"
 
 Write-Host "All static tests passed."

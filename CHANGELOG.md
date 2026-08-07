@@ -4,6 +4,33 @@ All notable changes to CSS Tree Inspector are documented here.
 
 This project follows [Semantic Versioning](https://semver.org/).
 
+Chrome-ready packages and release notes are available on the [GitHub Releases page](https://github.com/ext237/css-tree-inspector/releases).
+
+## [1.5.0] - 2026-08-07
+
+### Changed
+
+- Removed surrounding source-formatting whitespace from ordinary text nodes without collapsing meaningful internal or inline-boundary spaces.
+- Preserved text verbatim in `pre`, `textarea`, and computed whitespace-preserving contexts.
+- Excluded non-rendering infrastructure elements from JSON traversal and CSS generation while retaining hidden ordinary elements and original `outerHTML`.
+
+## [1.4.0] - 2026-08-07
+
+### Added
+
+- Added per-element `conditionalCSS` for relevant active and inactive media queries, container queries, nested conditions, and conditional state selectors.
+- Added `currentlyMatches` for media conditions and non-fatal deduplicated stylesheet-access diagnostics.
+- Added preserved conditional structure to CSS export.
+- Added a compact two-column action layout, clearer secondary controls, and hidden result controls until generation begins.
+
+### Changed
+
+- Renamed and reordered the primary actions to **Generate Tree JSON** and **Generate Tree CSS**.
+
+### Security
+
+- No debugger, host, or broad permissions were added.
+
 ## [1.3.0] - 2026-08-07
 
 ### Added
@@ -58,6 +85,8 @@ This project follows [Semantic Versioning](https://semver.org/).
 - Added copy, refresh, clear, stale-report, processing, light-theme, and dark-theme behavior.
 - Added local-only privacy documentation, tests, generated icons, and reproducible release packaging.
 
+[1.5.0]: https://github.com/ext237/css-tree-inspector/compare/v1.4.0...v1.5.0
+[1.4.0]: https://github.com/ext237/css-tree-inspector/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/ext237/css-tree-inspector/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/ext237/css-tree-inspector/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/ext237/css-tree-inspector/compare/v1.0.0...v1.1.0
