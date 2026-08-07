@@ -1,5 +1,7 @@
 # CSS Tree Inspector
 
+![CSS Tree Inspector](icons/CSS%20Tree%20Inspector.png)
+
 [![Version](https://img.shields.io/badge/version-1.5.0-blue)](CHANGELOG.md)
 ![Chrome DevTools](https://img.shields.io/badge/Chrome-DevTools-4285F4?logo=googlechrome\&logoColor=white)
 ![Manifest V3](https://img.shields.io/badge/Manifest-V3-5f6368)
@@ -11,7 +13,7 @@
 
 **[Download the latest Chrome-ready release](https://github.com/ext237/css-tree-inspector/releases)**
 
-Download the newest `css-tree-inspector-x.y.z.zip`, extract it, then load the extracted folder through `chrome://extensions` using **Load unpacked**.
+See [INSTALLATION.md](INSTALLATION.md) for the brief installation instructions.
 
 ## Why CSS Tree Inspector?
 
@@ -52,37 +54,16 @@ All inspection happens locally inside Chrome DevTools.
 
 ## Installation
 
-### Install as an unpacked extension
-
-1. Download or clone this repository.
-2. Open `chrome://extensions` in Chrome.
-3. Enable **Developer mode**.
-4. Click **Load unpacked** and select the project directory.
-5. Open or reload Chrome DevTools.
-6. Select **Elements**, then open the **CSS Tree Inspector** sidebar.
-
-After modifying extension files, click **Reload** on the extension card and reopen DevTools.
-
-A Chrome Web Store installation link will be added after publication.
+See [INSTALLATION.md](INSTALLATION.md) to install a Chrome-ready release as an unpacked extension.
 
 ## Usage
 
 1. Select an element in the DevTools **Elements** panel.
 2. Open the **CSS Tree Inspector** sidebar.
-3. Click **View CSS Tree From This Node** or **View CSS and Elements Tree as JSON**.
+3. Click **Generate Tree JSON** or **Generate Tree CSS**.
 4. Review the report or click **Copy** to place it on the clipboard.
 
 Use **Refresh** to regenerate the report or **Clear** to remove it.
-
-## CSS Output
-
-CSS output contains alphabetically sorted computed properties for the selected element and its descendants.
-
-CSS Tree Inspector examines accessible stylesheet rules and inline declarations that match each element, resolves ordinary cascade priority, and exports final browser-computed values only for properties determined to be relevant.
-
-Inherited declarations are retained when their computed values affect the inspected element.
-
-When a relevant declaration uses `var()`, CSS Tree Inspector retains the authored custom property and recursively referenced custom properties while omitting unrelated global custom properties.
 
 ## JSON Output
 
@@ -98,6 +79,16 @@ JSON output describes the selected DOM subtree and includes:
 * The selected subtree's exact `outerHTML`
 
 The `outerHTML` value is equivalent to Chrome Elements' **Copy outerHTML** result.
+
+## CSS Output
+
+CSS output follows document order for the selected element and its descendants. Within each generated rule, computed properties are sorted alphabetically. Captured authored state and conditional rules retain stylesheet source order.
+
+CSS Tree Inspector examines accessible stylesheet rules and inline declarations that match each element, resolves ordinary cascade priority, and exports final browser-computed values only for properties determined to be relevant.
+
+Inherited declarations are retained when their computed values affect the inspected element.
+
+When a relevant declaration uses `var()`, CSS Tree Inspector retains the authored custom property and recursively referenced custom properties while omitting unrelated global custom properties.
 
 ## Stateful CSS
 

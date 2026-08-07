@@ -6,6 +6,14 @@ This project follows [Semantic Versioning](https://semver.org/).
 
 Chrome-ready packages and release notes are available on the [GitHub Releases page](https://github.com/ext237/css-tree-inspector/releases).
 
+## Unreleased
+
+### Documentation
+
+- Added the project image to the top of the README.
+- Moved unpacked-extension instructions to a dedicated installation guide.
+- Prioritized JSON documentation and clarified CSS rule and property ordering.
+
 ## [1.5.0] - 2026-08-07
 
 ### Changed
