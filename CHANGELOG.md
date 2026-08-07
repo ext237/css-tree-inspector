@@ -4,6 +4,14 @@ All notable changes to CSS Tree Inspector are documented here.
 
 This project follows [Semantic Versioning](https://semver.org/).
 
+## [1.5.0] - 2026-08-07
+
+### Changed
+
+- Removed surrounding source-formatting whitespace from ordinary text nodes without collapsing meaningful internal or inline-boundary spaces.
+- Preserved text verbatim in `pre`, `textarea`, and computed whitespace-preserving contexts.
+- Excluded non-rendering infrastructure elements from JSON traversal and CSS generation while retaining hidden ordinary elements and original `outerHTML`.
+
 ## [1.4.0] - 2026-08-07
 
 ### Added
@@ -75,6 +83,7 @@ This project follows [Semantic Versioning](https://semver.org/).
 - Added copy, refresh, clear, stale-report, processing, light-theme, and dark-theme behavior.
 - Added local-only privacy documentation, tests, generated icons, and reproducible release packaging.
 
+[1.5.0]: https://github.com/ext237/css-tree-inspector/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/ext237/css-tree-inspector/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/ext237/css-tree-inspector/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/ext237/css-tree-inspector/compare/v1.1.0...v1.2.0

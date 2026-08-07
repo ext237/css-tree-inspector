@@ -1,6 +1,6 @@
 # CSS Tree Inspector
 
-[![Version](https://img.shields.io/badge/version-1.4.0-blue)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.5.0-blue)](CHANGELOG.md)
 ![Chrome DevTools](https://img.shields.io/badge/Chrome-DevTools-4285F4?logo=googlechrome\&logoColor=white)
 ![Manifest V3](https://img.shields.io/badge/Manifest-V3-5f6368)
 [![License: MIT](https://img.shields.io/github/license/ext237/css-tree-inspector)](LICENSE)
@@ -26,6 +26,8 @@ All inspection happens locally inside Chrome DevTools.
 * Captures authored state rules such as `:hover`, `:focus-visible`, and `:focus-within`, including states involving ancestors, siblings, and related descendants.
 * Preserves available `@media`, `@supports`, `@container`, `@layer`, and similar grouping context for captured state rules.
 * Captures relevant active and inactive media and container-query rules in each element's `conditionalCSS` array.
+* Cleans source-formatting whitespace from text nodes while preserving meaningful inline and whitespace-sensitive content.
+* Excludes non-rendering infrastructure elements from the inspection tree while retaining hidden ordinary elements and unchanged `outerHTML`.
 * Keeps reports visible when the DevTools selection changes and marks them as stale.
 * Copies reports only when you click **Copy**.
 * Supports Chrome DevTools light and dark themes.
