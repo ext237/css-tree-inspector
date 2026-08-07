@@ -4,6 +4,7 @@ const selectedElement = document.querySelector("#selectedElement");
 const staleNotice = document.querySelector("#staleNotice");
 const status = document.querySelector("#status");
 const result = document.querySelector("#result code");
+const resultViewer = document.querySelector("#resultViewer");
 const cssAction = document.querySelector("#cssAction");
 const jsonAction = document.querySelector("#jsonAction");
 const copyAction = document.querySelector("#copyAction");
@@ -49,6 +50,7 @@ async function updateSelection(markStale = false) {
 
 async function generate(mode) {
   if (isWorking) return;
+  resultViewer.hidden = false;
   setWorking(true);
   status.textContent = mode === "css" ? "Generating computed CSS…" : "Building JSON tree…";
   staleNotice.hidden = true;
@@ -95,12 +97,13 @@ copyAction.addEventListener("click", async () => {
 clearAction.addEventListener("click", () => {
   currentMode = null;
   currentOutput = "";
-  result.textContent = "Select an element and choose an inspection action.";
+  result.textContent = "";
   status.textContent = "Ready";
   staleNotice.hidden = true;
   copyAction.disabled = true;
   refreshAction.disabled = true;
   clearAction.disabled = true;
+  resultViewer.hidden = true;
 });
 
 chrome.devtools.panels.elements.onSelectionChanged.addListener(() => updateSelection(true));
