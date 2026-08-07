@@ -4,6 +4,23 @@ All notable changes to CSS Tree Inspector are documented here.
 
 This project follows [Semantic Versioning](https://semver.org/).
 
+## [1.2.0] - 2026-08-07
+
+### Changed
+
+- Replaced raw computed-style dumps with per-element relevance analysis based on matching authored rules, inline declarations, cascade priority, inheritance, and final computed values.
+- Reduced report size by omitting unrelated global and inherited custom properties.
+
+### Added
+
+- Added recursive `var()` dependency tracing that preserves useful authored custom-property chains and fallbacks.
+- Added browser regression coverage for cascade, inheritance, inline styles, custom properties, pseudo-elements, and exact outer HTML.
+
+### Security and compatibility
+
+- Continued operating without `debugger`, host, or other broad permissions.
+- Inaccessible cross-origin stylesheets are skipped without aborting inspection.
+
 ## [1.1.0] - 2026-08-07
 
 ### Added
@@ -26,5 +43,6 @@ This project follows [Semantic Versioning](https://semver.org/).
 - Added copy, refresh, clear, stale-report, processing, light-theme, and dark-theme behavior.
 - Added local-only privacy documentation, tests, generated icons, and reproducible release packaging.
 
+[1.2.0]: https://github.com/ext237/css-tree-inspector/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/ext237/css-tree-inspector/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/ext237/css-tree-inspector/releases/tag/v1.0.0

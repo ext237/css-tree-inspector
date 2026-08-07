@@ -8,22 +8,30 @@ function Assert-True($condition, $message) {
 
 $manifest = Get-Content -Raw (Join-Path $root "manifest.json") | ConvertFrom-Json
 Assert-True ($manifest.manifest_version -eq 3) "Manifest uses version 3"
-Assert-True ($manifest.version -eq "1.1.0") "Manifest version is 1.1.0"
+Assert-True ($manifest.version -eq "1.2.0") "Manifest version is 1.2.0"
 Assert-True ($manifest.devtools_page -eq "devtools.html") "DevTools entry point is configured"
 Assert-True (-not $manifest.permissions) "No extension permissions are requested"
 
 $required = @(
     "manifest.json", "devtools.html", "devtools.js", "sidebar/sidebar.html",
     "sidebar/sidebar.css", "sidebar/sidebar.js", "lib/inspector-source.js",
-    "README.md", "CHANGELOG.md", "LICENSE", "CONTRIBUTING.md", "PRIVACY.md"
+    "README.md", "CHANGELOG.md", "LICENSE", "CONTRIBUTING.md", "PRIVACY.md", "tests/relevance-tests.html"
 )
 foreach ($file in $required) {
     Assert-True (Test-Path (Join-Path $root $file)) "$file exists"
 }
 
 $inspector = Get-Content -Raw (Join-Path $root "lib/inspector-source.js")
-Assert-True ($inspector.Contains('const VERSION = "1.1.0"')) "JSON metadata version matches manifest"
+Assert-True ($inspector.Contains('const VERSION = "1.2.0"')) "JSON metadata version matches manifest"
 Assert-True ($inspector.Contains('getComputedStyle')) "Computed styles are inspected"
+Assert-True ($inspector.Contains('document.styleSheets')) "Accessible authored stylesheets are inspected"
+Assert-True ($inspector.Contains('document.adoptedStyleSheets')) "Constructed stylesheets are inspected"
+Assert-True ($inspector.Contains('Inaccessible imports are skipped')) "Stylesheet import access failures are isolated"
+Assert-True ($inspector.Contains('element.matches')) "Rules are matched with the browser selector engine"
+Assert-True ($inspector.Contains('getPropertyPriority')) "Important declarations participate in cascade resolution"
+Assert-True ($inspector.Contains('selectorSpecificity')) "Selector specificity participates in cascade resolution"
+Assert-True ($inspector.Contains('addCustomDependencies')) "Custom-property dependencies are traced recursively"
+Assert-True (-not $inspector.Contains('for (const name of names) output[name]')) "Raw computed styles are not dumped"
 Assert-True ($inspector.Contains('getBoundingClientRect')) "Element dimensions are inspected"
 Assert-True ($inspector.Contains('subTreeElements')) "Nested element output is implemented"
 Assert-True ($inspector.Contains('Node.TEXT_NODE')) "Direct text nodes are inspected"
@@ -39,6 +47,12 @@ $gitignore = Get-Content -Raw (Join-Path $root ".gitignore")
 Assert-True ($gitignore.Contains('/test-result.txt')) "Local test-result.txt is ignored"
 
 $changelog = Get-Content -Raw (Join-Path $root "CHANGELOG.md")
-Assert-True ($changelog.Contains('## [1.1.0]') -and $changelog.Contains('## [1.0.0]')) "Changelog contains 1.1.0 and 1.0.0 releases"
+Assert-True ($changelog.Contains('## [1.2.0]') -and $changelog.Contains('## [1.1.0]') -and $changelog.Contains('## [1.0.0]')) "Changelog contains all releases"
+
+$fixture = Get-Content -Raw (Join-Path $root "tests/relevance-tests.html")
+foreach ($case in @('direct declaration', 'inherited declaration', 'important and source-order', 'higher-specificity', 'inline style', 'nested custom-property', 'var fallback', 'unused custom property', 'pseudo-element')) {
+    Assert-True ($fixture.Contains($case)) "Browser fixture covers $case"
+}
+Assert-True (-not $manifest.permissions) "No debugger or host permissions were introduced"
 
 Write-Host "All static tests passed."
