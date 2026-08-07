@@ -4,6 +4,21 @@ All notable changes to CSS Tree Inspector are documented here.
 
 This project follows [Semantic Versioning](https://semver.org/).
 
+## [1.3.0] - 2026-08-07
+
+### Added
+
+- Added separate authored `stateCSS` arrays for elements and `::before`/`::after` pseudo-elements.
+- Added non-mutating detection for direct, ancestor, sibling, descendant, functional, multiple, form, link, and related-element pseudo-class states.
+- Added preservation of state subjects, `!important`, custom-property dependencies, and enclosing at-rule context.
+- Added deduplicated state rules to CSS export mode.
+- Added browser regression coverage emphasizing `.header:hover .child` and `.container:focus-within .child` relationships.
+
+### Security and privacy
+
+- State discovery does not force browser states or inspect visited-link history.
+- No debugger, host, or broad permissions were added.
+
 ## [1.2.0] - 2026-08-07
 
 ### Changed
@@ -43,6 +58,7 @@ This project follows [Semantic Versioning](https://semver.org/).
 - Added copy, refresh, clear, stale-report, processing, light-theme, and dark-theme behavior.
 - Added local-only privacy documentation, tests, generated icons, and reproducible release packaging.
 
+[1.3.0]: https://github.com/ext237/css-tree-inspector/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/ext237/css-tree-inspector/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/ext237/css-tree-inspector/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/ext237/css-tree-inspector/releases/tag/v1.0.0

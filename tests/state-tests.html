@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>State selector tests</title>
+  <style>
+    :root { --brand-dark: #223344; }
+    a.direct:hover { --hover-color: var(--brand-dark); color: var(--hover-color) !important; }
+    button.active:active { transform: scale(.98); }
+    input.focus:focus { outline: 2px solid blue; }
+    button.visible:focus-visible { outline-offset: 3px; }
+    .direct-within:focus-within { border-color: green; }
+    section.target:target { background: yellow; }
+    input.check:checked { accent-color: red; }
+    input.disabled:disabled { opacity: .5; }
+    input.invalid:invalid { border-color: red; }
+    .header:hover .header-child { color: red; }
+    .container:focus-within .container-child { opacity: 1; }
+    button.sibling:focus + .menu { display: block; }
+    .form:has(input:focus) .help { visibility: visible; }
+    .multi-menu:hover .multi-item:focus-visible { color: white; }
+    button.functional:is(:hover, :focus-visible) { background: red; }
+    button.where:where(:hover, :focus-visible) { background: orange; }
+    button.not-state:not(:disabled):hover { color: green; }
+    button.pseudo:hover::before { content: "badge"; background: red; }
+    .selector-list:hover, .selector-list:focus-visible, .selector-list.is-open { color: purple; }
+    li:first-child { margin-top: 0; }
+    li:nth-child(2) { margin-top: 1px; }
+    p:empty { min-height: 1px; }
+    a.visited:visited { color: purple; }
+    @media (min-width: 800px) { a.media:hover { text-decoration: underline; } }
+    @supports (display: grid) { .supports:hover .supports-child { display: grid; } }
+  </style>
+</head>
+<body>
+  <a class="direct" href="#direct">Direct</a>
+  <button class="active">Active</button>
+  <input class="focus">
+  <button class="visible">Visible</button>
+  <div class="direct-within"><input></div>
+  <section class="target">Target</section>
+  <input class="check" type="checkbox">
+  <input class="disabled" disabled>
+  <input class="invalid" required>
+  <header class="header"><span class="header-child first">One</span><span class="header-child second">Two</span></header>
+  <div class="container"><button class="container-child">Within</button></div>
+  <button class="sibling">Open</button><div class="menu">Menu</div>
+  <form class="form"><input><span class="help">Help</span></form>
+  <div class="multi-menu"><button class="multi-item">Multiple</button></div>
+  <button class="functional">Functional</button>
+  <button class="where">Where</button>
+  <button class="not-state">Not</button>
+  <button class="pseudo">Pseudo</button>
+  <button class="selector-list">List</button>
+  <ul><li class="structural">One</li><li>Two</li></ul>
+  <p class="empty"></p>
+  <a class="visited" href="https://example.com/visited-test">Visited</a>
+  <a class="media" href="#media">Media</a>
+  <div class="supports"><span class="supports-child">Supports</span></div>
+  <pre id="results">Running…</pre>
+  <script src="../lib/inspector-source.js"></script>
+  <script>
+    const assertions = [];
+    window.addEventListener("error", (event) => {
+      document.documentElement.dataset.failed = "true";
+      document.querySelector("#results").textContent = `FAIL: uncaught test error: ${event.message}`;
+    });
+    function check(condition, message) {
+      assertions.push(`${condition ? "PASS" : "FAIL"}: ${message}`);
+      if (!condition) document.documentElement.dataset.failed = "true";
+    }
+    function inspect(selector) {
+      globalThis.$0 = document.querySelector(selector);
+      return JSON.parse(eval(CSS_TREE_INSPECTOR_EXPRESSION("json")).output).rootElement;
+    }
+    function findRule(element, selector) {
+      return element.stateCSS.find((rule) => rule.selector === selector);
+    }
+
+    const direct = inspect("a.direct");
+    const directRule = findRule(direct, "a.direct:hover");
+    check(Array.isArray(direct.stateCSS) && !Object.hasOwn(direct.computedCSS, "--hover-color"), "stateCSS remains separate from current computedCSS");
+    check(directRule.states.includes(":hover"), "direct :hover is captured");
+    check(directRule.declarations.color.endsWith("!important"), "state !important is preserved");
+    check(directRule.declarations["--hover-color"] === "var(--brand-dark)", "state custom property is preserved");
+    check(directRule.declarations["--brand-dark"] === "#223344", "state custom-property dependency is traced");
+    check(findRule(inspect("button.active"), "button.active:active").states.includes(":active"), "direct :active is captured");
+    const focusRule = findRule(inspect("input.focus"), "input.focus:focus");
+    check(focusRule.states.includes(":focus"), "direct :focus is captured");
+    check(Object.hasOwn(focusRule.declarations, "outline") && focusRule.declarations.outline.includes("blue"), "authored state shorthand is preserved");
+    check(findRule(inspect("button.visible"), "button.visible:focus-visible").states.includes(":focus-visible"), "direct :focus-visible is captured");
+    check(findRule(inspect(".direct-within"), ".direct-within:focus-within").states.includes(":focus-within"), "direct :focus-within is captured");
+    check(findRule(inspect("section.target"), "section.target:target").states.includes(":target"), "direct :target is captured");
+    check(findRule(inspect("input.check"), "input.check:checked").states.includes(":checked"), "form :checked is captured");
+    check(findRule(inspect("input.disabled"), "input.disabled:disabled").states.includes(":disabled"), "form :disabled is captured");
+    check(findRule(inspect("input.invalid"), "input.invalid:invalid").states.includes(":invalid"), "form :invalid is captured");
+
+    const ancestorRule = findRule(inspect(".header-child.first"), ".header:hover .header-child");
+    check(ancestorRule && !ancestorRule.stateTargets[0].appliesToCurrentElement, "ancestor :hover rule is associated with its descendant");
+    check(ancestorRule.stateTargets[0].selectorPart === ".header:hover", "ancestor state subject is preserved");
+    const focusWithinRule = findRule(inspect(".container-child"), ".container:focus-within .container-child");
+    check(focusWithinRule && !focusWithinRule.stateTargets[0].appliesToCurrentElement, "ancestor :focus-within rule is associated with its child");
+    check(findRule(inspect(".menu"), "button.sibling:focus + .menu"), "sibling state rule targets the affected element");
+    check(findRule(inspect(".help"), ".form:has(input:focus) .help"), "descendant state inside :has() targets related content");
+
+    const multiple = findRule(inspect(".multi-item"), ".multi-menu:hover .multi-item:focus-visible");
+    check(multiple.states.includes(":hover") && multiple.states.includes(":focus-visible"), "multiple state requirements stay on one rule");
+    check(multiple.stateTargets.some((target) => !target.appliesToCurrentElement) && multiple.stateTargets.some((target) => target.appliesToCurrentElement), "multiple state subjects are distinguished");
+    const functional = findRule(inspect("button.functional"), "button.functional:is(:hover, :focus-visible)");
+    check(functional.states.length === 2, "states inside :is() are captured");
+    const where = findRule(inspect("button.where"), "button.where:where(:hover, :focus-visible)");
+    check(where.states.length === 2, "states inside :where() are captured");
+    const negated = findRule(inspect("button.not-state"), "button.not-state:not(:disabled):hover");
+    check(negated.states.includes(":disabled") && negated.states.includes(":hover"), "states inside :not() are captured without preventing potential matching");
+
+    const pseudo = inspect("button.pseudo");
+    check(pseudo.stateCSS.length === 0, "pseudo-element state rule is not duplicated on the element");
+    check(pseudo.pseudoElements.before.stateCSS.some((rule) => rule.selector === "button.pseudo:hover::before"), "state plus pseudo-element is captured on ::before");
+    const listRules = inspect("button.selector-list").stateCSS;
+    check(listRules.some((rule) => rule.selector === ".selector-list:hover") && listRules.some((rule) => rule.selector === ".selector-list:focus-visible"), "state branches in selector lists are captured");
+    check(!listRules.some((rule) => rule.selector === ".selector-list.is-open"), "non-pseudo state-like class is excluded");
+    check(inspect("li.structural").stateCSS.length === 0 && inspect("p.empty").stateCSS.length === 0, "structural pseudo-classes are excluded");
+    check(findRule(inspect("a.visited"), "a.visited:visited").states.includes(":visited"), "authored :visited rule is captured without history inspection");
+
+    const media = findRule(inspect("a.media"), "a.media:hover");
+    check(media.atRuleContext.some((context) => context.startsWith("@media")), "media context is preserved in JSON");
+    const supports = findRule(inspect(".supports-child"), ".supports:hover .supports-child");
+    check(supports.atRuleContext.some((context) => context.startsWith("@supports")), "supports context is preserved in JSON");
+
+    globalThis.$0 = document.body;
+    const cssOutput = eval(CSS_TREE_INSPECTOR_EXPRESSION("css")).output;
+    check(cssOutput.includes(".header:hover .header-child"), "ancestor-state rule is present in CSS export");
+    check(cssOutput.includes(".container:focus-within .container-child"), "ancestor focus-within rule is present in CSS export");
+    check(cssOutput.includes("@media (min-width: 800px)"), "at-rule context is reproduced in CSS export");
+    check(cssOutput.split(".header:hover .header-child").length - 1 === 1, "CSS export deduplicates one rule affecting multiple descendants");
+    check(location.hash === "" && document.activeElement === document.body && !document.querySelector("input.check").checked, "state discovery does not mutate page state");
+
+    document.querySelector("#results").textContent = assertions.join("\n");
+  </script>
+</body>
+</html>

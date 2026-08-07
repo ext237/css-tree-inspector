@@ -35,6 +35,10 @@
   <script src="../lib/inspector-source.js"></script>
   <script>
     const assertions = [];
+    window.addEventListener("error", (event) => {
+      document.documentElement.dataset.failed = "true";
+      document.querySelector("#results").textContent = `FAIL: uncaught test error: ${event.message}`;
+    });
     function check(condition, message) {
       assertions.push(`${condition ? "PASS" : "FAIL"}: ${message}`);
       if (!condition) document.documentElement.dataset.failed = "true";
@@ -50,7 +54,10 @@
     check(css.display === "block", "direct declaration is retained");
     check(css["font-family"].includes("Arial"), "inherited declaration is retained");
     check(css.color === "rgb(0, 0, 255)", "important and source-order cascade is respected");
-    check(css.padding === "12px", `higher-specificity declaration wins (actual: ${JSON.stringify(css.padding)})`);
+    check(
+      ["padding-top", "padding-right", "padding-bottom", "padding-left"].every((property) => css[property] === "12px"),
+      `higher-specificity shorthand expands to winning computed longhands (actual top: ${JSON.stringify(css["padding-top"])})`
+    );
     check(Object.hasOwn(css, "border-left-width"), `inline style is retained (actual: ${JSON.stringify(css["border-left-width"])})`);
     check(css["margin-left"] === "7px", "compound child and attribute selector matches");
     check(css["--component-color"] === "var(--brand-color)", "direct custom-property source is retained");

@@ -2,12 +2,13 @@
 
 CSS Tree Inspector is a privacy-friendly Chrome DevTools extension that exports the final computed CSS and nested DOM description of the element selected in the Elements panel.
 
-Current version: **1.2.0** · [Changelog](CHANGELOG.md)
+Current version: **1.3.0** · [Changelog](CHANGELOG.md)
 
 ## Features
 
 - Generates readable, relevant computed CSS for a selected element and every descendant instead of dumping the complete `getComputedStyle()` namespace.
 - Produces valid, nested JSON with attributes, dimensions, direct text nodes, computed CSS, `::before`/`::after` data, and the selected subtree's exact outer HTML.
+- Captures authored state rules such as `:hover`, `:focus-visible`, and `:focus-within`, including states on ancestors, siblings, and related descendants.
 - Keeps reports visible when the selection changes and clearly marks them stale.
 - Copies a report only when you click **Copy**.
 - Supports Chrome DevTools light and dark themes.
@@ -46,6 +47,14 @@ CSS Tree Inspector starts with accessible stylesheet rules and inline declaratio
 
 All analysis remains local and requires neither the `debugger` permission nor host permissions.
 
+### Stateful CSS
+
+Every JSON element includes a `stateCSS` array. `computedCSS` describes the element's current rendered state; `stateCSS` contains authored declarations that could apply under pseudo-class conditions. Each state entry preserves the original selector, all participating states, the selector component carrying each state, whether that component is the current element, authored declarations (including `!important` and custom-property syntax), and enclosing at-rule context.
+
+For example, a child affected by `.header:hover .title` receives that original rule with `appliesToCurrentElement: false`. Sibling relationships, `:has()` descendant relationships, multiple states, and states inside `:is()`, `:where()`, and `:not()` are also analyzed without activating them. Pseudo-element state rules are stored under the corresponding `pseudoElements.before.stateCSS` or `pseudoElements.after.stateCSS` array.
+
+State output does not mean a state was active during inspection. CSS Tree Inspector does not hover, focus, click, toggle, or otherwise mutate the inspected page. Authored `:visited` rules may be reported, but the extension never attempts to determine browsing history. CSS export preserves original state selectors and available `@media`, `@supports`, `@container`, `@layer`, or similar grouping context.
+
 ## Development
 
 The project uses plain JavaScript, HTML, and CSS and requires no build step or runtime dependencies. Run the lightweight structural checks in PowerShell:
@@ -54,7 +63,7 @@ The project uses plain JavaScript, HTML, and CSS and requires no build step or r
 powershell -ExecutionPolicy Bypass -File .\tests\static-tests.ps1
 ```
 
-For browser-level relevance checks, open `tests/relevance-tests.html` in Chrome. Its results panel covers direct, inherited, overridden, important, inline, compound-selector, custom-property chain, fallback, unused-variable, pseudo-element, and outerHTML behavior.
+For browser-level checks, open `tests/relevance-tests.html` and `tests/state-tests.html` in Chrome. Their result panels cover relevance plus direct, ancestor, sibling, descendant, functional, multiple-state, form-state, pseudo-element, at-rule, structural-exclusion, visited-link, deduplication, and outerHTML behavior.
 
 Regenerate icons when needed:
 
@@ -79,6 +88,7 @@ All inspection happens locally. CSS Tree Inspector does not transmit or remotely
 - Inspection inside unusual iframe execution contexts may depend on Chrome DevTools behavior.
 - Source-level relevance analysis skips cross-origin stylesheets whose `cssRules` Chrome does not expose. Other accessible rules and computed values continue to work.
 - Cascade layers, complex functional-pseudo specificity, animations, transitions, and browser/user styles can have final values that are visible to `getComputedStyle()` but cannot always be attributed precisely through standard page APIs.
+- State matching is observational and source-based. Selectors unsupported by the current browser or exceptionally complex selectors that cannot be safely neutralized are skipped rather than forced.
 - Very large subtrees can take time and produce large reports.
 - CSS selectors are readable paths relative to the selected root, not guaranteed globally unique production selectors.
 
