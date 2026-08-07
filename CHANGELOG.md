@@ -1,0 +1,64 @@
+# Changelog
+
+All notable changes to CSS Tree Inspector are documented here.
+
+This project follows [Semantic Versioning](https://semver.org/).
+
+## [1.3.0] - 2026-08-07
+
+### Added
+
+- Added separate authored `stateCSS` arrays for elements and `::before`/`::after` pseudo-elements.
+- Added non-mutating detection for direct, ancestor, sibling, descendant, functional, multiple, form, link, and related-element pseudo-class states.
+- Added preservation of state subjects, `!important`, custom-property dependencies, and enclosing at-rule context.
+- Added deduplicated state rules to CSS export mode.
+- Added browser regression coverage emphasizing `.header:hover .child` and `.container:focus-within .child` relationships.
+
+### Security and privacy
+
+- State discovery does not force browser states or inspect visited-link history.
+- No debugger, host, or broad permissions were added.
+
+## [1.2.0] - 2026-08-07
+
+### Changed
+
+- Replaced raw computed-style dumps with per-element relevance analysis based on matching authored rules, inline declarations, cascade priority, inheritance, and final computed values.
+- Reduced report size by omitting unrelated global and inherited custom properties.
+
+### Added
+
+- Added recursive `var()` dependency tracing that preserves useful authored custom-property chains and fallbacks.
+- Added browser regression coverage for cascade, inheritance, inline styles, custom properties, pseudo-elements, and exact outer HTML.
+
+### Security and compatibility
+
+- Continued operating without `debugger`, host, or other broad permissions.
+- Inaccessible cross-origin stylesheets are skipped without aborting inspection.
+
+## [1.1.0] - 2026-08-07
+
+### Added
+
+- Added `outerHTML` as the final top-level property in exported JSON reports.
+- The property contains the selected element's exact outer HTML, equivalent to Chrome Elements' **Copy outerHTML** command.
+
+### Privacy
+
+- Documented that exact outer HTML can contain sensitive information already present in the selected markup.
+
+## [1.0.0] - 2026-08-07
+
+### Added
+
+- Initial release of the Manifest V3 Chrome DevTools extension.
+- Added an Elements-panel sidebar that follows the currently selected node.
+- Added recursive computed-CSS export for the selected element and its descendants.
+- Added nested JSON export with metadata, attributes, dimensions, direct text nodes, computed CSS, and pseudo-elements.
+- Added copy, refresh, clear, stale-report, processing, light-theme, and dark-theme behavior.
+- Added local-only privacy documentation, tests, generated icons, and reproducible release packaging.
+
+[1.3.0]: https://github.com/ext237/css-tree-inspector/compare/v1.2.0...v1.3.0
+[1.2.0]: https://github.com/ext237/css-tree-inspector/compare/v1.1.0...v1.2.0
+[1.1.0]: https://github.com/ext237/css-tree-inspector/compare/v1.0.0...v1.1.0
+[1.0.0]: https://github.com/ext237/css-tree-inspector/releases/tag/v1.0.0

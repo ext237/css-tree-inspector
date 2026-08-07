@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>CSS relevance tests</title>
+  <style>
+    :root {
+      --brand-color: rgb(10, 20, 30);
+      --fallback-color: rgb(90, 80, 70);
+      --unused-global: hotpink;
+    }
+    body { font-family: Arial, sans-serif; }
+    .target {
+      color: red !important;
+      display: block;
+      padding: 1px;
+      --component-color: var(--brand-color);
+      background-color: var(--component-color);
+      outline-color: var(--missing-color, var(--fallback-color));
+    }
+    #fixture { color: green; padding: 12px; }
+    .wrapper > .target[data-test="yes"] { margin-left: 7px; }
+    .target { color: blue !important; }
+    #fixture::before { content: "fixture"; color: var(--brand-color); }
+    .inherit-parent { --inherited-text-color: rgb(11, 22, 33); color: var(--inherited-text-color); }
+    .inherit-child { --inherited-text-color: rgb(99, 99, 99); }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div id="fixture" class="target" data-test="yes" style="border-left-width: 3px">Test</div>
+  </div>
+  <div class="inherit-parent"><span id="inheritedFixture" class="inherit-child">Inherited test</span></div>
+  <pre id="results">Running…</pre>
+  <script src="../lib/inspector-source.js"></script>
+  <script>
+    const assertions = [];
+    window.addEventListener("error", (event) => {
+      document.documentElement.dataset.failed = "true";
+      document.querySelector("#results").textContent = `FAIL: uncaught test error: ${event.message}`;
+    });
+    function check(condition, message) {
+      assertions.push(`${condition ? "PASS" : "FAIL"}: ${message}`);
+      if (!condition) document.documentElement.dataset.failed = "true";
+    }
+
+    globalThis.$0 = document.querySelector("#fixture");
+    const report = eval(CSS_TREE_INSPECTOR_EXPRESSION("json"));
+    const data = JSON.parse(report.output);
+    const css = data.rootElement.computedCSS;
+    const before = data.rootElement.pseudoElements.before;
+
+    check(report.ok, "inspection succeeds");
+    check(css.display === "block", "direct declaration is retained");
+    check(css["font-family"].includes("Arial"), "inherited declaration is retained");
+    check(css.color === "rgb(0, 0, 255)", "important and source-order cascade is respected");
+    check(
+      ["padding-top", "padding-right", "padding-bottom", "padding-left"].every((property) => css[property] === "12px"),
+      `higher-specificity shorthand expands to winning computed longhands (actual top: ${JSON.stringify(css["padding-top"])})`
+    );
+    check(Object.hasOwn(css, "border-left-width"), `inline style is retained (actual: ${JSON.stringify(css["border-left-width"])})`);
+    check(css["margin-left"] === "7px", "compound child and attribute selector matches");
+    check(css["--component-color"] === "var(--brand-color)", "direct custom-property source is retained");
+    check(css["--brand-color"] === "rgb(10, 20, 30)", "nested custom-property dependency is retained");
+    check(css["--fallback-color"] === "rgb(90, 80, 70)", "var fallback dependency is retained");
+    check(!Object.hasOwn(css, "--unused-global"), "unused custom property is omitted");
+    check(before.exists && before.computedCSS.color === "rgb(10, 20, 30)", "pseudo-element relevance is retained");
+    check(data.outerHTML === globalThis.$0.outerHTML, "outerHTML remains exact and last");
+    check(Object.keys(data).at(-1) === "outerHTML", "outerHTML is the final top-level property");
+
+    globalThis.$0 = document.querySelector("#inheritedFixture");
+    const inheritedData = JSON.parse(eval(CSS_TREE_INSPECTOR_EXPRESSION("json")).output);
+    const inheritedCss = inheritedData.rootElement.computedCSS;
+    check(inheritedCss.color === "rgb(11, 22, 33)", "inherited computed value comes from the ancestor");
+    check(inheritedCss["--inherited-text-color"] === "rgb(11, 22, 33)", "inherited var dependency uses the ancestor source context");
+
+    document.querySelector("#results").textContent = assertions.join("\n");
+  </script>
+</body>
+</html>

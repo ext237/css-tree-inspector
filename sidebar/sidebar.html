@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CSS Tree Inspector</title>
+  <link rel="stylesheet" href="sidebar.css">
+</head>
+<body>
+  <main class="app">
+    <section class="selection" aria-live="polite">
+      <span class="label">Selected</span>
+      <code id="selectedElement">Checking selection…</code>
+      <span id="staleNotice" class="notice" hidden>Selection changed. The displayed report is stale.</span>
+    </section>
+
+    <div class="actions">
+      <button id="cssAction" type="button">View CSS Tree From This Node</button>
+      <button id="jsonAction" type="button">View CSS and Elements Tree as JSON</button>
+    </div>
+
+    <div class="toolbar">
+      <span id="status" role="status">Ready</span>
+      <div class="toolbar-actions">
+        <button id="copyAction" class="secondary" type="button" disabled>Copy</button>
+        <button id="refreshAction" class="secondary" type="button" disabled>Refresh</button>
+        <button id="clearAction" class="secondary" type="button" disabled>Clear</button>
+      </div>
+    </div>
+
+    <pre id="result" tabindex="0" aria-label="Inspection result"><code>Select an element and choose an inspection action.</code></pre>
+  </main>
+  <script src="../lib/inspector-source.js"></script>
+  <script src="sidebar.js"></script>
+</body>
+</html>
