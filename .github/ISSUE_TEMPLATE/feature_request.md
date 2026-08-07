@@ -7,14 +7,17 @@ assignees: ''
 
 ---
 
-**Is your feature request related to a problem? Please describe.**
-A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+**What would you like to improve?**
+Describe the problem, limitation, or workflow you would like CSS Tree Inspector to handle better.
 
-**Describe the solution you'd like**
-A clear and concise description of what you want to happen.
+**Describe the feature**
+What would you like CSS Tree Inspector to do?
 
-**Describe alternatives you've considered**
-A clear and concise description of any alternative solutions or features you've considered.
+**How would this help?**
+Briefly explain how this would improve debugging, inspection, or exported output.
+
+**Alternatives or workarounds**
+If you currently use another method or workaround, describe it here.
 
 **Additional context**
-Add any other context or screenshots about the feature request here.
+Add screenshots, examples, or sample output if they help explain the request.
