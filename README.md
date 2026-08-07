@@ -2,7 +2,7 @@
 
 ![CSS Tree Inspector](icons/CSS%20Tree%20Inspector.png)
 
-[![Version](https://img.shields.io/badge/version-1.5.0-blue)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.6.0-blue)](CHANGELOG.md)
 ![Chrome DevTools](https://img.shields.io/badge/Chrome-DevTools-4285F4?logo=googlechrome\&logoColor=white)
 ![Manifest V3](https://img.shields.io/badge/Manifest-V3-5f6368)
 [![License: MIT](https://img.shields.io/github/license/ext237/css-tree-inspector)](LICENSE)
@@ -31,9 +31,12 @@ All inspection happens locally inside Chrome DevTools.
 
 * Generates readable, relevant computed CSS for a selected element and its descendants instead of dumping the complete `getComputedStyle()` namespace.
 * Produces valid nested JSON containing attributes, dimensions, direct text nodes, computed CSS, pseudo-element data, and the selected subtree's exact outer HTML.
+* Prioritizes direct text in each JSON element and omits empty optional fields for a more compact report.
+* Includes visual and state-related HTML attributes by default, with an option to include all HTML attributes.
 * Captures authored state rules such as `:hover`, `:focus-visible`, and `:focus-within`, including states involving ancestors, siblings, and related descendants.
 * Preserves available `@media`, `@supports`, `@container`, `@layer`, and similar grouping context for captured state rules.
 * Captures relevant active and inactive media and container-query rules in each element's `conditionalCSS` array.
+* Recovers available cross-origin stylesheet content through Chrome DevTools and applies the same focused selector and cascade analysis without requesting host or debugger permissions, including inactive media-query rules.
 * Cleans source-formatting whitespace from text nodes while preserving meaningful inline and whitespace-sensitive content.
 * Excludes non-rendering infrastructure elements from the inspection tree while retaining hidden ordinary elements and unchanged `outerHTML`.
 * Keeps reports visible when the DevTools selection changes and marks them as stale.
@@ -46,7 +49,7 @@ All inspection happens locally inside Chrome DevTools.
 * CSS Tree Inspector captures computed values and relevant authored rules, but does not provide complete stylesheet provenance or every overridden declaration.
 * Shadow DOM contents are not currently traversed. An encountered open shadow root is noted in JSON.
 * Inspection inside unusual iframe execution contexts may depend on Chrome DevTools behavior.
-* Cross-origin stylesheets whose `cssRules` Chrome does not expose cannot be analyzed at the source-rule level.
+* Cross-origin stylesheet recovery depends on the stylesheet being available as a Chrome DevTools resource. Unavailable, unsupported, or unparseable resources are reported rather than replaced with a large computed-style dump.
 * Cascade layers, complex selector specificity, animations, transitions, and browser or user styles can affect computed values in ways that standard page APIs cannot always attribute precisely.
 * Selectors unsupported by the current browser, or selectors that cannot be safely analyzed, are skipped rather than forced.
 * Very large DOM subtrees can produce large reports and require additional processing time.
@@ -65,6 +68,12 @@ See [INSTALLATION.md](INSTALLATION.md) to install a Chrome-ready release as an u
 
 Use **Refresh** to regenerate the report or **Clear** to remove it.
 
+Enable **Include HTML Attributes** before generating or refreshing JSON to include all attributes. When unchecked, the report retains common visual/state attributes and `name`, while omitting unrelated metadata such as most `data-*` attributes. `id` and `class` remain available through their dedicated fields in either mode.
+
+Choose **Embed CSS in each DOM node** for an easier-to-read but larger report. Choose **Combine duplicate CSS into definitions** for a compact report that moves repeated computed, state, and conditional CSS into top-level `styleDefinitions`, reducing token use. Unique CSS remains inline.
+
+Both JSON-specific controls are grouped under **JSON Options** above the generation buttons.
+
 ## JSON Output
 
 JSON output describes the selected DOM subtree and includes:
@@ -79,6 +88,12 @@ JSON output describes the selected DOM subtree and includes:
 * The selected subtree's exact `outerHTML`
 
 The `outerHTML` value is equivalent to Chrome Elements' **Copy outerHTML** result.
+
+When present, `textNodes` is the first property in an element object. Empty optional properties—including text, attributes, computed CSS, state CSS, conditional CSS, pseudo-elements, shadow-root data, and descendant arrays—are omitted rather than emitted with empty or null values.
+
+In combined mode, exact duplicate styles use `computedCSSRef`, `stateCSSRef`, or `conditionalCSSRef`. Definitions receive stable names such as `computed-1` in DOM encounter order. Embedded mode remains the default.
+
+Combined reports instruct readers to resolve `*CSSRef` values through `styleDefinitions`.
 
 ## CSS Output
 
@@ -116,7 +131,9 @@ CSS Tree Inspector does not hover, focus, click, toggle, or otherwise modify the
 
 Each element includes a `conditionalCSS` array containing relevant authored rules nested under `@media` or `@container`. Inactive media rules are retained, and `currentlyMatches` reports current `matchMedia()` applicability. Container-query applicability is left as `null` because standard page APIs do not expose a reliable equivalent. Nested media/container contexts and conditional state selectors are preserved without flattening them into unconditional CSS.
 
-Stylesheets blocked by browser cross-origin protections are reported once in `corsIssues`; CSS export includes the same diagnostic as a comment. CSS Tree Inspector does not bypass those protections.
+When page-level CSSOM blocks a stylesheet, CSS Tree Inspector attempts to recover its already-loaded content through Chrome DevTools and reruns the same focused matching and cascade analysis. Stylesheets that remain unavailable are reported once in `corsIssues`; CSS export includes the same diagnostic as a comment.
+
+Recovered stylesheets retain active and inactive `@media` rules. Relevant inactive rules remain in `conditionalCSS` with `currentlyMatches: false`; they do not alter the element's current `computedCSS`.
 
 ## Privacy
 

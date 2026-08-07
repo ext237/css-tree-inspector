@@ -46,10 +46,12 @@
     check(child("pre").textNodes[0].text === document.querySelector(".pre").firstChild.nodeValue, "pre text is exact");
     check(child("preserve").textNodes[0].text === document.querySelector(".preserve").firstChild.nodeValue, "computed whitespace-preserving text is exact");
     check(child("textarea").textNodes[0].text === document.querySelector(".textarea").firstChild.nodeValue, "textarea text is exact");
-    check(root.textNodes.length === 0, "whitespace-only formatting nodes are omitted");
+    check(!Object.hasOwn(root, "textNodes"), "whitespace-only formatting nodes are omitted");
     const tags = root.subTreeElements.map((item) => item.tagName);
     check(["style", "script", "template", "link", "meta", "title", "base", "noscript"].every((tag) => !tags.includes(tag)), "non-rendering infrastructure elements are excluded");
     check(Boolean(child("hidden")), "hidden ordinary elements remain inspectable");
+    check(!Object.hasOwn(child("hidden"), "subTreeElements"), "empty descendant arrays are omitted");
+    check(!Object.hasOwn(child("hidden"), "pseudoElements"), "nonexistent pseudo-elements are omitted");
     check(data.outerHTML === document.querySelector("#fixture").outerHTML, "outerHTML remains unchanged");
     document.querySelector("#results").textContent = assertions.join("\n");
   </script>

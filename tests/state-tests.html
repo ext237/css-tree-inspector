@@ -74,7 +74,7 @@
       return JSON.parse(eval(CSS_TREE_INSPECTOR_EXPRESSION("json")).output).rootElement;
     }
     function findRule(element, selector) {
-      return element.stateCSS.find((rule) => rule.selector === selector);
+      return (element.stateCSS || []).find((rule) => rule.selector === selector);
     }
 
     const direct = inspect("a.direct");
@@ -114,18 +114,19 @@
     check(negated.states.includes(":disabled") && negated.states.includes(":hover"), "states inside :not() are captured without preventing potential matching");
 
     const pseudo = inspect("button.pseudo");
-    check(pseudo.stateCSS.length === 0, "pseudo-element state rule is not duplicated on the element");
+    check(!Object.hasOwn(pseudo, "stateCSS"), "empty element stateCSS is omitted");
     check(pseudo.pseudoElements.before.stateCSS.some((rule) => rule.selector === "button.pseudo:hover::before"), "state plus pseudo-element is captured on ::before");
     const listRules = inspect("button.selector-list").stateCSS;
     check(listRules.some((rule) => rule.selector === ".selector-list:hover") && listRules.some((rule) => rule.selector === ".selector-list:focus-visible"), "state branches in selector lists are captured");
     check(!listRules.some((rule) => rule.selector === ".selector-list.is-open"), "non-pseudo state-like class is excluded");
-    check(inspect("li.structural").stateCSS.length === 0 && inspect("p.empty").stateCSS.length === 0, "structural pseudo-classes are excluded");
+    check(!Object.hasOwn(inspect("li.structural"), "stateCSS") && !Object.hasOwn(inspect("p.empty"), "stateCSS"), "structural pseudo-classes are excluded");
     check(findRule(inspect("a.visited"), "a.visited:visited").states.includes(":visited"), "authored :visited rule is captured without history inspection");
 
     const media = findRule(inspect("a.media"), "a.media:hover");
     check(media.atRuleContext.some((context) => context.startsWith("@media")), "media context is preserved in JSON");
     const supports = findRule(inspect(".supports-child"), ".supports:hover .supports-child");
     check(supports.atRuleContext.some((context) => context.startsWith("@supports")), "supports context is preserved in JSON");
+    check(!Object.hasOwn(directRule, "atRuleContext") && !Object.hasOwn(directRule, "conditions"), "empty state-rule context metadata is omitted");
 
     globalThis.$0 = document.body;
     const cssOutput = eval(CSS_TREE_INSPECTOR_EXPRESSION("css")).output;

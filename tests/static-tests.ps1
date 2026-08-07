@@ -8,21 +8,21 @@ function Assert-True($condition, $message) {
 
 $manifest = Get-Content -Raw (Join-Path $root "manifest.json") | ConvertFrom-Json
 Assert-True ($manifest.manifest_version -eq 3) "Manifest uses version 3"
-Assert-True ($manifest.version -eq "1.5.0") "Manifest version is 1.5.0"
+Assert-True ($manifest.version -eq "1.6.0") "Manifest version is 1.6.0"
 Assert-True ($manifest.devtools_page -eq "devtools.html") "DevTools entry point is configured"
 Assert-True (-not $manifest.permissions) "No extension permissions are requested"
 
 $required = @(
     "manifest.json", "devtools.html", "devtools.js", "sidebar/sidebar.html",
     "sidebar/sidebar.css", "sidebar/sidebar.js", "lib/inspector-source.js",
-    "README.md", "CHANGELOG.md", "LICENSE", "CONTRIBUTING.md", "PRIVACY.md", "tests/relevance-tests.html", "tests/state-tests.html", "tests/conditional-tests.html", "tests/tree-cleanup-tests.html"
+    "README.md", "CHANGELOG.md", "LICENSE", "CONTRIBUTING.md", "PRIVACY.md", "tests/relevance-tests.html", "tests/state-tests.html", "tests/conditional-tests.html", "tests/tree-cleanup-tests.html", "tests/json-format-tests.html"
 )
 foreach ($file in $required) {
     Assert-True (Test-Path (Join-Path $root $file)) "$file exists"
 }
 
 $inspector = Get-Content -Raw (Join-Path $root "lib/inspector-source.js")
-Assert-True ($inspector.Contains('const VERSION = "1.5.0"')) "JSON metadata version matches manifest"
+Assert-True ($inspector.Contains('const VERSION = "1.6.0"')) "JSON metadata version matches manifest"
 Assert-True ($inspector.Contains('getComputedStyle')) "Computed styles are inspected"
 Assert-True ($inspector.Contains('document.styleSheets')) "Accessible authored stylesheets are inspected"
 Assert-True ($inspector.Contains('document.adoptedStyleSheets')) "Constructed stylesheets are inspected"
@@ -40,6 +40,7 @@ Assert-True ($inspector.Contains('authoredDeclarations')) "State declaration par
 Assert-True ($inspector.Contains('conditionalCSS')) "Elements expose conditional CSS"
 Assert-True ($inspector.Contains('currentlyMatches')) "Media applicability is recorded"
 Assert-True ($inspector.Contains('recordAccessIssue')) "Stylesheet access failures are collected once"
+Assert-True ($inspector.Contains('recoveredStyleSheets') -and $inspector.Contains('recoveredRules')) "Blocked stylesheet resources are recovered"
 Assert-True ($inspector.Contains('cleanTextNode')) "Text-node boundary cleanup is implemented"
 Assert-True ($inspector.Contains('preservesWhitespace')) "Whitespace-sensitive contexts are detected"
 Assert-True ($inspector.Contains('NON_RENDERING_ELEMENTS')) "Infrastructure elements use a centralized exclusion set"
@@ -51,8 +52,12 @@ Assert-True ($inspector.Contains('["input", "select", "option"]')) "Input and se
 Assert-True ($inspector.Contains('tagName === "pre" || tagName === "textarea"')) "Textarea whitespace is preserved"
 Assert-True ($inspector.Contains('::before') -and $inspector.Contains('::after')) "Pseudo-elements are inspected"
 Assert-True ($inspector.Contains('outerHTML: selected.outerHTML')) "JSON includes exact selected-element outerHTML"
+Assert-True ($inspector.Contains('combineStyleDefinitions') -and $inspector.Contains('computedCSSRef')) "Repeated JSON styles can use definitions"
+Assert-True ($inspector.Contains('_about:')) "JSON includes a concise report description"
+Assert-True ($inspector.Contains('CSS Tree Inspector by 24Moves.com')) "JSON identifies the report generator"
+Assert-True ($inspector.Contains('Math.round(value * 1000) / 1000')) "Dimensions are rounded to three decimal places"
 
-$rootElementPosition = $inspector.IndexOf('rootElement: inspectElement(selected, selected)')
+$rootElementPosition = $inspector.IndexOf('rootElement,')
 $outerHtmlPosition = $inspector.IndexOf('outerHTML: selected.outerHTML')
 Assert-True ($outerHtmlPosition -gt $rootElementPosition) "outerHTML is the final top-level JSON property"
 
@@ -87,7 +92,18 @@ $sidebarHtml = Get-Content -Raw (Join-Path $root "sidebar/sidebar.html")
 $sidebarCss = Get-Content -Raw (Join-Path $root "sidebar/sidebar.css")
 Assert-True ($sidebarHtml.IndexOf('id="jsonAction"') -lt $sidebarHtml.IndexOf('id="cssAction"')) "JSON action appears before CSS action"
 Assert-True ($sidebarHtml.Contains('Generate Tree JSON') -and $sidebarHtml.Contains('Generate Tree CSS')) "Action labels are updated"
+Assert-True ($sidebarHtml.Contains('Include HTML Attributes')) "Attribute inclusion option is available"
+Assert-True ($sidebarHtml.Contains('value="embed" checked') -and $sidebarHtml.Contains('value="definitions"')) "JSON CSS format options are available"
+Assert-True ($sidebarHtml.Contains('Easier to read, larger report') -and $sidebarHtml.Contains('Compact, fewer tokens')) "JSON CSS format tradeoffs are explained"
+Assert-True ($sidebarHtml.Contains('<legend>JSON Options</legend>') -and $sidebarHtml.IndexOf('<fieldset class="options-group">') -lt $sidebarHtml.IndexOf('<div class="actions">')) "JSON options appear above generation actions"
 Assert-True ($sidebarHtml.Contains('id="resultViewer"') -and $sidebarHtml.Contains('hidden')) "Result controls start hidden"
 Assert-True ($sidebarCss.Contains('.actions { display: flex')) "Primary actions use side-by-side flex layout"
+Assert-True ($sidebarHtml.Contains('<span class="label">Selected:</span>') -and $sidebarCss.Contains('.selection-current')) "Selected label and node share one line"
+Assert-True ($sidebarHtml.Contains('id="workingOverlay"') -and $sidebarCss.Contains('.working-overlay.is-visible') -and $sidebarCss.Contains('@keyframes spin')) "Generation overlay and spinner are implemented"
+
+$jsonFormatFixture = Get-Content -Raw (Join-Path $root "tests/json-format-tests.html")
+foreach ($case in @('includeAllAttributes: false', 'includeAllAttributes: true', 'combineStyles: true', 'computedCSSRef', 'three decimal places')) {
+    Assert-True ($jsonFormatFixture.Contains($case)) "JSON format fixture covers $case"
+}
 
 Write-Host "All static tests passed."

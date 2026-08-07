@@ -9,10 +9,28 @@
 <body>
   <main class="app">
     <section class="selection" aria-live="polite">
-      <span class="label">Selected</span>
+      <div class="selection-current">
+        <span class="label">Selected:</span>
       <code id="selectedElement">Checking selection…</code>
+      </div>
       <span id="staleNotice" class="notice" hidden>Selection changed. The displayed report is stale.</span>
     </section>
+
+    <fieldset class="options-group">
+      <legend>JSON Options</legend>
+      <label class="option">
+        <input id="includeAttributes" type="checkbox">
+        <span>Include HTML Attributes</span>
+      </label>
+      <label class="option">
+        <input type="radio" name="jsonCssFormat" value="embed" checked>
+        <span>Embed CSS in each DOM node - Easier to read, larger report</span>
+      </label>
+      <label class="option">
+        <input type="radio" name="jsonCssFormat" value="definitions">
+        <span>Combine duplicate CSS into definitions - Compact, fewer tokens</span>
+      </label>
+    </fieldset>
 
     <div class="actions">
       <button id="jsonAction" type="button">Generate Tree JSON</button>
@@ -30,6 +48,13 @@
       </div>
       <pre id="result" tabindex="0" aria-label="Inspection result"><code></code></pre>
     </section>
+
+    <div id="workingOverlay" class="working-overlay" aria-hidden="true">
+      <div class="working-dialog" role="status" aria-live="polite">
+        <span class="spinner" aria-hidden="true"></span>
+        <span id="workingMessage">Generating report...</span>
+      </div>
+    </div>
   </main>
   <script src="../lib/inspector-source.js"></script>
   <script src="sidebar.js"></script>

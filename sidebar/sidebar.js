@@ -7,19 +7,27 @@ const result = document.querySelector("#result code");
 const resultViewer = document.querySelector("#resultViewer");
 const cssAction = document.querySelector("#cssAction");
 const jsonAction = document.querySelector("#jsonAction");
+const includeAttributes = document.querySelector("#includeAttributes");
+const jsonCssFormats = document.querySelectorAll('input[name="jsonCssFormat"]');
 const copyAction = document.querySelector("#copyAction");
 const refreshAction = document.querySelector("#refreshAction");
 const clearAction = document.querySelector("#clearAction");
+const workingOverlay = document.querySelector("#workingOverlay");
+const workingMessage = document.querySelector("#workingMessage");
 
 let currentMode = null;
 let currentOutput = "";
 let isWorking = false;
 let copyTimer = null;
 
-function evaluate(mode) {
+function evaluate(mode, recoveredStyleSheets = []) {
   return new Promise((resolve, reject) => {
     chrome.devtools.inspectedWindow.eval(
-      CSS_TREE_INSPECTOR_EXPRESSION(mode),
+      CSS_TREE_INSPECTOR_EXPRESSION(mode, {
+        includeAllAttributes: includeAttributes.checked,
+        combineStyles: document.querySelector('input[name="jsonCssFormat"]:checked').value === "definitions",
+        recoveredStyleSheets
+      }),
       (value, exceptionInfo) => {
         if (exceptionInfo && (exceptionInfo.isException || exceptionInfo.isError)) {
           reject(new Error(exceptionInfo.value || exceptionInfo.description || "DevTools evaluation failed."));
@@ -31,11 +39,43 @@ function evaluate(mode) {
   });
 }
 
+function inspectedResources() {
+  return new Promise((resolve) => chrome.devtools.inspectedWindow.getResources(resolve));
+}
+
+function resourceContent(resource) {
+  return new Promise((resolve) => {
+    resource.getContent((content, encoding) => {
+      try {
+        resolve(encoding === "base64" ? atob(content) : content);
+      } catch (_) {
+        resolve(null);
+      }
+    });
+  });
+}
+
+async function recoverStyleSheets(urls) {
+  if (!urls || !urls.length) return [];
+  const wanted = new Set(urls.map((url) => new URL(url).href));
+  const resources = await inspectedResources();
+  const matches = resources.filter((resource) => {
+    try { return wanted.has(new URL(resource.url).href); } catch (_) { return false; }
+  });
+  const recovered = await Promise.all(matches.map(async (resource) => ({
+    url: resource.url,
+    content: await resourceContent(resource)
+  })));
+  return recovered.filter((sheet) => typeof sheet.content === "string");
+}
+
 function setWorking(working) {
   isWorking = working;
   cssAction.disabled = working;
   jsonAction.disabled = working;
   refreshAction.disabled = working || !currentMode;
+  workingOverlay.classList.toggle("is-visible", working);
+  workingOverlay.setAttribute("aria-hidden", String(!working));
 }
 
 async function updateSelection(markStale = false) {
@@ -51,14 +91,20 @@ async function updateSelection(markStale = false) {
 async function generate(mode) {
   if (isWorking) return;
   resultViewer.hidden = false;
+  workingMessage.textContent = mode === "css" ? "Generating CSS report..." : "Building JSON report...";
   setWorking(true);
   status.textContent = mode === "css" ? "Generating computed CSS…" : "Building JSON tree…";
   staleNotice.hidden = true;
   await new Promise((resolve) => requestAnimationFrame(resolve));
 
   try {
-    const response = await evaluate(mode);
+    let response = await evaluate(mode);
     if (!response || !response.ok) throw Object.assign(new Error((response && response.message) || "Unable to inspect the selected element."), { expected: true });
+    const recoveredStyleSheets = await recoverStyleSheets(response.inaccessibleStylesheetUrls);
+    if (recoveredStyleSheets.length) {
+      response = await evaluate(mode, recoveredStyleSheets);
+      if (!response || !response.ok) throw Object.assign(new Error((response && response.message) || "Unable to inspect the selected element."), { expected: true });
+    }
     currentMode = mode;
     currentOutput = response.output;
     result.textContent = currentOutput;
@@ -82,6 +128,14 @@ async function generate(mode) {
 cssAction.addEventListener("click", () => generate("css"));
 jsonAction.addEventListener("click", () => generate("json"));
 refreshAction.addEventListener("click", () => currentMode && generate(currentMode));
+includeAttributes.addEventListener("change", () => {
+  if (currentMode === "json" && currentOutput) staleNotice.hidden = false;
+});
+for (const option of jsonCssFormats) {
+  option.addEventListener("change", () => {
+    if (currentMode === "json" && currentOutput) staleNotice.hidden = false;
+  });
+}
 
 copyAction.addEventListener("click", async () => {
   try {

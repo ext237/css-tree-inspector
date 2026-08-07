@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>JSON format tests</title>
+  <style>.repeat { color: rgb(12, 34, 56); padding: 4px; }</style>
+</head>
+<body>
+  <div id="fixture">
+    <span class="repeat" name="first" data-tracking="omit">First</span>
+    <span class="repeat" name="second" data-tracking="include">Second</span>
+  </div>
+  <pre id="results">Running…</pre>
+  <script src="../lib/inspector-source.js"></script>
+  <script>
+    const assertions = [];
+    function check(condition, message) {
+      assertions.push(`${condition ? "PASS" : "FAIL"}: ${message}`);
+      if (!condition) document.documentElement.dataset.failed = "true";
+    }
+    function inspect(options) {
+      globalThis.$0 = document.querySelector("#fixture");
+      return JSON.parse(eval(CSS_TREE_INSPECTOR_EXPRESSION("json", options)).output);
+    }
+
+    const embedded = inspect({ includeAllAttributes: false, combineStyles: false });
+    const first = embedded.rootElement.subTreeElements[0];
+    check(embedded._about.includes("original parent-child order"), "report description explains DOM nesting");
+    check(Object.keys(first)[0] === "textNodes", "textNodes is first when present");
+    check(first.attributes.name === "first" && !Object.hasOwn(first.attributes, "data-tracking"), "default attributes retain name and omit data metadata");
+    check(!Object.hasOwn(embedded, "styleDefinitions") && Object.hasOwn(first, "computedCSS"), "embedded mode keeps CSS in nodes");
+    check(Object.values(first.dimensions).every((value) => value === Math.round(value * 1000) / 1000), "dimensions use at most three decimal places");
+
+    const allAttributes = inspect({ includeAllAttributes: true, combineStyles: false });
+    check(allAttributes.rootElement.subTreeElements[0].attributes["data-tracking"] === "omit", "full attribute mode includes data attributes");
+
+    const combined = inspect({ includeAllAttributes: false, combineStyles: true });
+    const combinedChildren = combined.rootElement.subTreeElements;
+    const reference = combinedChildren[0].computedCSSRef;
+    check(combined._about.includes("Resolve *CSSRef values through styleDefinitions"), "combined report explains style references");
+    check(combined.meta.generator === "CSS Tree Inspector by 24Moves.com", "report identifies its generator");
+    check(Boolean(reference) && combinedChildren[1].computedCSSRef === reference, "identical computed CSS shares one reference");
+    check(Boolean(combined.styleDefinitions[reference]) && !Object.hasOwn(combinedChildren[0], "computedCSS"), "shared definition replaces duplicated inline CSS");
+    check(Object.keys(combined).at(-1) === "outerHTML", "outerHTML remains the final top-level property");
+
+    document.querySelector("#results").textContent = assertions.join("\n");
+  </script>
+</body>
+</html>

@@ -6,7 +6,26 @@ This project follows [Semantic Versioning](https://semver.org/).
 
 Chrome-ready packages and release notes are available on the [GitHub Releases page](https://github.com/ext237/css-tree-inspector/releases).
 
-## Unreleased
+## [1.6.0] - 2026-08-07
+
+### Added
+
+- Added an unchecked **Include HTML Attributes** option. Default JSON retains common visual/state attributes and `name`; enabling the option includes all attributes except duplicated `id` and `class` fields.
+- Added focused recovery of CSSOM-blocked stylesheet content through Chrome DevTools resources, including relevant inactive media-query rules and current match status, without adding host or debugger permissions.
+- Added a JSON formatting option that can move exact duplicate computed, state, and conditional CSS into top-level `styleDefinitions` with stable per-node references; embedded CSS remains the default.
+
+### Changed
+
+- Moved `textNodes` to the first property of each element when text is present.
+- Omitted empty optional JSON fields, including attributes, computed/state/conditional CSS, pseudo-elements, shadow-root data, and descendant arrays.
+- Removed the redundant pseudo-element `exists` field; the presence of `before` or `after` now indicates a visible pseudo-element.
+- Added a short top-level `_about` description explaining the report's nested DOM structure and visual-debugging purpose.
+- Rounded element dimension values to a maximum of three decimal places.
+- Omitted empty `atRuleContext` and `conditions` metadata from state rules while retaining populated conditional context.
+- Grouped JSON-only controls under **JSON Options** above the generation buttons.
+- Added combined-report instructions for resolving `*CSSRef` values and identified the generator as **CSS Tree Inspector by 24Moves.com**.
+- Clarified the JSON CSS-format tradeoffs in the interface and top-aligned wrapped option labels with their radio controls.
+- Placed the selected-node label and value on one line and added a subtle animated processing overlay for report generation.
 
 ### Documentation
 
@@ -93,6 +112,7 @@ Chrome-ready packages and release notes are available on the [GitHub Releases pa
 - Added copy, refresh, clear, stale-report, processing, light-theme, and dark-theme behavior.
 - Added local-only privacy documentation, tests, generated icons, and reproducible release packaging.
 
+[1.6.0]: https://github.com/ext237/css-tree-inspector/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/ext237/css-tree-inspector/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/ext237/css-tree-inspector/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/ext237/css-tree-inspector/compare/v1.2.0...v1.3.0

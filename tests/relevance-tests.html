@@ -64,7 +64,7 @@
     check(css["--brand-color"] === "rgb(10, 20, 30)", "nested custom-property dependency is retained");
     check(css["--fallback-color"] === "rgb(90, 80, 70)", "var fallback dependency is retained");
     check(!Object.hasOwn(css, "--unused-global"), "unused custom property is omitted");
-    check(before.exists && before.computedCSS.color === "rgb(10, 20, 30)", "pseudo-element relevance is retained");
+    check(before.computedCSS.color === "rgb(10, 20, 30)" && !Object.hasOwn(before, "exists"), "pseudo-element relevance is retained without an exists flag");
     check(data.outerHTML === globalThis.$0.outerHTML, "outerHTML remains exact and last");
     check(Object.keys(data).at(-1) === "outerHTML", "outerHTML is the final top-level property");
 
