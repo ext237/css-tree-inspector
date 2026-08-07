@@ -2,10 +2,12 @@
 
 CSS Tree Inspector is a privacy-friendly Chrome DevTools extension that exports the final computed CSS and nested DOM description of the element selected in the Elements panel.
 
+Current version: **1.1.0** · [Changelog](CHANGELOG.md)
+
 ## Features
 
 - Generates readable computed CSS for a selected element and every descendant.
-- Produces valid, nested JSON with attributes, dimensions, direct text nodes, computed CSS, and `::before`/`::after` data.
+- Produces valid, nested JSON with attributes, dimensions, direct text nodes, computed CSS, `::before`/`::after` data, and the selected subtree's exact outer HTML.
 - Keeps reports visible when the selection changes and clearly marks them stale.
 - Copies a report only when you click **Copy**.
 - Supports Chrome DevTools light and dark themes.
@@ -36,7 +38,7 @@ After changing extension files, click **Reload** on the extension card and reope
 3. Review the result directly in the sidebar.
 4. Use **Copy**, **Refresh**, or **Clear** as needed.
 
-CSS output contains alphabetically sorted computed properties. JSON output wraps the selected element in metadata and preserves direct descendants under `subTreeElements`.
+CSS output contains alphabetically sorted computed properties. JSON output wraps the selected element in metadata, preserves direct descendants under `subTreeElements`, and ends with an `outerHTML` string equivalent to Chrome Elements' **Copy outerHTML** result.
 
 ## Development
 
@@ -73,6 +75,10 @@ All inspection happens locally. CSS Tree Inspector does not transmit or remotely
 ## Contributing
 
 Bug reports and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for release history and notable changes.
 
 ## License
 
