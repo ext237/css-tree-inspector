@@ -4,6 +4,8 @@ All notable changes to CSS Tree Inspector are documented here.
 
 This project follows [Semantic Versioning](https://semver.org/).
 
+Chrome-ready packages and release notes are available on the [GitHub Releases page](https://github.com/ext237/css-tree-inspector/releases).
+
 ## [1.5.0] - 2026-08-07
 
 ### Changed

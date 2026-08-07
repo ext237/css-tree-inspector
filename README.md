@@ -7,6 +7,12 @@
 
 **A Chrome DevTools extension for extracting the HTML and CSS context needed to diagnose styling problems or share focused context with AI.**
 
+## Download
+
+**[Download the latest Chrome-ready release](https://github.com/ext237/css-tree-inspector/releases)**
+
+Download the newest `css-tree-inspector-x.y.z.zip`, extract it, then load the extracted folder through `chrome://extensions` using **Load unpacked**.
+
 ## Why CSS Tree Inspector?
 
 AI can only troubleshoot the code it can see.
