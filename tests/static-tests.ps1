@@ -8,7 +8,7 @@ function Assert-True($condition, $message) {
 
 $manifest = Get-Content -Raw (Join-Path $root "manifest.json") | ConvertFrom-Json
 Assert-True ($manifest.manifest_version -eq 3) "Manifest uses version 3"
-Assert-True ($manifest.version -eq "1.6.0") "Manifest version is 1.6.0"
+Assert-True ($manifest.version -eq "1.6.1") "Manifest version is 1.6.1"
 Assert-True ($manifest.devtools_page -eq "devtools.html") "DevTools entry point is configured"
 Assert-True (-not $manifest.permissions) "No extension permissions are requested"
 
@@ -22,7 +22,7 @@ foreach ($file in $required) {
 }
 
 $inspector = Get-Content -Raw (Join-Path $root "lib/inspector-source.js")
-Assert-True ($inspector.Contains('const VERSION = "1.6.0"')) "JSON metadata version matches manifest"
+Assert-True ($inspector.Contains('const VERSION = "1.6.1"')) "JSON metadata version matches manifest"
 Assert-True ($inspector.Contains('getComputedStyle')) "Computed styles are inspected"
 Assert-True ($inspector.Contains('document.styleSheets')) "Accessible authored stylesheets are inspected"
 Assert-True ($inspector.Contains('document.adoptedStyleSheets')) "Constructed stylesheets are inspected"
@@ -100,6 +100,9 @@ Assert-True ($sidebarHtml.Contains('id="resultViewer"') -and $sidebarHtml.Contai
 Assert-True ($sidebarCss.Contains('.actions { display: flex')) "Primary actions use side-by-side flex layout"
 Assert-True ($sidebarHtml.Contains('<span class="label">Selected:</span>') -and $sidebarCss.Contains('.selection-current')) "Selected label and node share one line"
 Assert-True ($sidebarHtml.Contains('id="workingOverlay"') -and $sidebarCss.Contains('.working-overlay.is-visible') -and $sidebarCss.Contains('@keyframes spin')) "Generation overlay and spinner are implemented"
+$sidebarJs = Get-Content -Raw (Join-Path $root "sidebar/sidebar.js")
+Assert-True ($sidebarJs.Contains('chrome.devtools.network.onNavigated') -and $sidebarJs.Contains('resetInterface("Page refreshed or navigated - select an element")')) "Navigation resets the sidebar interface"
+Assert-True ($sidebarJs.Contains('generationSequence') -and $sidebarJs.Contains('generation !== generationSequence')) "Obsolete generation results are ignored"
 
 $jsonFormatFixture = Get-Content -Raw (Join-Path $root "tests/json-format-tests.html")
 foreach ($case in @('includeAllAttributes: false', 'includeAllAttributes: true', 'combineStyles: true', 'computedCSSRef', 'three decimal places')) {

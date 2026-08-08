@@ -19,6 +19,7 @@ let currentMode = null;
 let currentOutput = "";
 let isWorking = false;
 let copyTimer = null;
+let generationSequence = 0;
 
 function evaluate(mode, recoveredStyleSheets = []) {
   return new Promise((resolve, reject) => {
@@ -78,6 +79,23 @@ function setWorking(working) {
   workingOverlay.setAttribute("aria-hidden", String(!working));
 }
 
+function resetInterface(selectionMessage = null) {
+  generationSequence += 1;
+  clearTimeout(copyTimer);
+  copyTimer = null;
+  currentMode = null;
+  currentOutput = "";
+  result.textContent = "";
+  status.textContent = "Ready";
+  staleNotice.hidden = true;
+  copyAction.disabled = true;
+  refreshAction.disabled = true;
+  clearAction.disabled = true;
+  resultViewer.hidden = true;
+  setWorking(false);
+  if (selectionMessage) selectedElement.textContent = selectionMessage;
+}
+
 async function updateSelection(markStale = false) {
   try {
     const response = await evaluate("summary");
@@ -90,6 +108,7 @@ async function updateSelection(markStale = false) {
 
 async function generate(mode) {
   if (isWorking) return;
+  const generation = ++generationSequence;
   resultViewer.hidden = false;
   workingMessage.textContent = mode === "css" ? "Generating CSS report..." : "Building JSON report...";
   setWorking(true);
@@ -99,10 +118,13 @@ async function generate(mode) {
 
   try {
     let response = await evaluate(mode);
+    if (generation !== generationSequence) return;
     if (!response || !response.ok) throw Object.assign(new Error((response && response.message) || "Unable to inspect the selected element."), { expected: true });
     const recoveredStyleSheets = await recoverStyleSheets(response.inaccessibleStylesheetUrls);
+    if (generation !== generationSequence) return;
     if (recoveredStyleSheets.length) {
       response = await evaluate(mode, recoveredStyleSheets);
+      if (generation !== generationSequence) return;
       if (!response || !response.ok) throw Object.assign(new Error((response && response.message) || "Unable to inspect the selected element."), { expected: true });
     }
     currentMode = mode;
@@ -112,6 +134,7 @@ async function generate(mode) {
     copyAction.disabled = false;
     clearAction.disabled = false;
   } catch (error) {
+    if (generation !== generationSequence) return;
     currentMode = null;
     currentOutput = "";
     result.textContent = error.message || "Unable to inspect the selected element.";
@@ -120,8 +143,10 @@ async function generate(mode) {
     clearAction.disabled = false;
     if (!error.expected) console.error("CSS Tree Inspector:", error);
   } finally {
-    setWorking(false);
-    await updateSelection(false);
+    if (generation === generationSequence) {
+      setWorking(false);
+      await updateSelection(false);
+    }
   }
 }
 
@@ -148,22 +173,11 @@ copyAction.addEventListener("click", async () => {
   }
 });
 
-clearAction.addEventListener("click", () => {
-  currentMode = null;
-  currentOutput = "";
-  result.textContent = "";
-  status.textContent = "Ready";
-  staleNotice.hidden = true;
-  copyAction.disabled = true;
-  refreshAction.disabled = true;
-  clearAction.disabled = true;
-  resultViewer.hidden = true;
-});
+clearAction.addEventListener("click", () => resetInterface());
 
 chrome.devtools.panels.elements.onSelectionChanged.addListener(() => updateSelection(true));
 chrome.devtools.network.onNavigated.addListener(() => {
-  selectedElement.textContent = "Page navigated — select an element";
-  if (currentOutput) staleNotice.hidden = false;
+  resetInterface("Page refreshed or navigated - select an element");
 });
 
 updateSelection(false);

@@ -6,6 +6,17 @@ This project follows [Semantic Versioning](https://semver.org/).
 
 Chrome-ready packages and release notes are available on the [GitHub Releases page](https://github.com/ext237/css-tree-inspector/releases).
 
+## [1.6.1] - 2026-08-07
+
+### Documentation
+
+- Expanded each known limitation with versioned notes describing the mitigation already implemented.
+- Clarified that large-subtree mitigation preserves complete traversal and uses the v1.6 processing indicator rather than node or depth limits.
+
+### Fixed
+
+- Reset the sidebar to its default state after the inspected page refreshes or navigates, and prevented an interrupted generation from restoring obsolete output.
+
 ## [1.6.0] - 2026-08-07
 
 ### Added
@@ -112,6 +123,7 @@ Chrome-ready packages and release notes are available on the [GitHub Releases pa
 - Added copy, refresh, clear, stale-report, processing, light-theme, and dark-theme behavior.
 - Added local-only privacy documentation, tests, generated icons, and reproducible release packaging.
 
+[1.6.1]: https://github.com/ext237/css-tree-inspector/compare/v1.6.0...v1.6.1
 [1.6.0]: https://github.com/ext237/css-tree-inspector/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/ext237/css-tree-inspector/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/ext237/css-tree-inspector/compare/v1.3.0...v1.4.0

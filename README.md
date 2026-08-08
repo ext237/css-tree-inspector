@@ -2,7 +2,7 @@
 
 ![CSS Tree Inspector](icons/CSS%20Tree%20Inspector.png)
 
-[![Version](https://img.shields.io/badge/version-1.6.0-blue)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-1.6.1-blue)](CHANGELOG.md)
 ![Chrome DevTools](https://img.shields.io/badge/Chrome-DevTools-4285F4?logo=googlechrome\&logoColor=white)
 ![Manifest V3](https://img.shields.io/badge/Manifest-V3-5f6368)
 [![License: MIT](https://img.shields.io/github/license/ext237/css-tree-inspector)](LICENSE)
@@ -47,13 +47,21 @@ All inspection happens locally inside Chrome DevTools.
 ## Known Limitations
 
 * CSS Tree Inspector captures computed values and relevant authored rules, but does not provide complete stylesheet provenance or every overridden declaration.
+  * **Mitigation (v1.2.0):** Matches accessible authored rules, resolves ordinary cascade priority, and reports final browser-computed values only for relevant properties.
 * Shadow DOM contents are not currently traversed. An encountered open shadow root is noted in JSON.
+  * **Mitigation (v1.0.0):** Detects encountered open shadow roots and explicitly marks them as unsupported instead of silently presenting an incomplete subtree.
 * Inspection inside unusual iframe execution contexts may depend on Chrome DevTools behavior.
+  * **Mitigation (v1.0.0):** Runs through Chrome's inspected-window context and follows the active Elements-panel selection when Chrome exposes that context.
 * Cross-origin stylesheet recovery depends on the stylesheet being available as a Chrome DevTools resource. Unavailable, unsupported, or unparseable resources are reported rather than replaced with a large computed-style dump.
+  * **Mitigation (v1.6.0):** Recovers already-loaded stylesheet content through Chrome DevTools, then reruns focused selector, cascade, state, and conditional-rule analysis without host or debugger permissions.
 * Cascade layers, complex selector specificity, animations, transitions, and browser or user styles can affect computed values in ways that standard page APIs cannot always attribute precisely.
+  * **Mitigation (v1.2.0-v1.4.0):** Resolves ordinary importance, specificity, source order, inheritance, and custom-property dependencies while preserving available state and conditional at-rule context.
 * Selectors unsupported by the current browser, or selectors that cannot be safely analyzed, are skipped rather than forced.
+  * **Mitigation (v1.3.0):** Uses the browser selector engine, structured state-selector analysis, and non-mutating potential matching; unsafe branches are isolated so inspection can continue.
 * Very large DOM subtrees can produce large reports and require additional processing time.
+  * **Mitigation (v1.2.0 and v1.6.0):** Limits output to relevant CSS, omits empty JSON fields, optionally replaces exact duplicate styles with shared `styleDefinitions` references, and displays a processing indicator while generation is underway. Inspection remains complete; CSS Tree Inspector does not truncate the subtree or impose node/depth limits for performance.
 * Generated CSS selectors are readable paths relative to the selected root and are not guaranteed to be globally unique production selectors.
+  * **Mitigation (v1.0.0):** Builds deterministic root-relative paths using tag names, IDs, and classes to keep generated reports readable and internally consistent.
 
 ## Installation
 
