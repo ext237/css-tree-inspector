@@ -13,7 +13,7 @@
 
 **[Download the latest Chrome-ready release](https://github.com/ext237/css-tree-inspector/releases)**
 
-See [INSTALLATION.md](INSTALLATION.md) for the brief installation instructions.
+See [docs/INSTALLATION.md](docs/INSTALLATION.md) for the brief installation instructions.
 
 ## Why CSS Tree Inspector?
 
@@ -65,7 +65,7 @@ All inspection happens locally inside Chrome DevTools.
 
 ## Installation
 
-See [INSTALLATION.md](INSTALLATION.md) to install a Chrome-ready release as an unpacked extension.
+See [docs/INSTALLATION.md](docs/INSTALLATION.md) to install a Chrome-ready release as an unpacked extension.
 
 ## Usage
 
@@ -151,7 +151,7 @@ CSS Tree Inspector does not transmit or remotely store inspected page data and r
 
 It does not require Chrome's `debugger` permission.
 
-See [PRIVACY.md](PRIVACY.md) for details.
+See [docs/PRIVACY.md](docs/PRIVACY.md) for details.
 
 CSS Tree Inspector uses plain JavaScript, HTML, and CSS. It has no build step or runtime dependencies.
 
@@ -200,3 +200,5 @@ See [CHANGELOG.md](CHANGELOG.md) for release history and notable changes.
 Licensed under the [MIT License](LICENSE).
 
 © 2026 24Moves / Joe Lippeatt / [24moves.com](https://24moves.com)
+
+

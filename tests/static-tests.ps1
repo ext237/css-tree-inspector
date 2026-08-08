@@ -15,7 +15,7 @@ Assert-True (-not $manifest.permissions) "No extension permissions are requested
 $required = @(
     "manifest.json", "devtools.html", "devtools.js", "sidebar/sidebar.html",
     "sidebar/sidebar.css", "sidebar/sidebar.js", "lib/inspector-source.js",
-    "README.md", "CHANGELOG.md", "LICENSE", "CONTRIBUTING.md", "PRIVACY.md", "tests/relevance-tests.html", "tests/state-tests.html", "tests/conditional-tests.html", "tests/tree-cleanup-tests.html", "tests/json-format-tests.html"
+    "README.md", "CHANGELOG.md", "LICENSE", "CONTRIBUTING.md", "docs/PRIVACY.md", "tests/relevance-tests.html", "tests/state-tests.html", "tests/conditional-tests.html", "tests/tree-cleanup-tests.html", "tests/json-format-tests.html"
 )
 foreach ($file in $required) {
     Assert-True (Test-Path (Join-Path $root $file)) "$file exists"
