@@ -10,8 +10,8 @@ Chrome-ready packages and release notes are available on the [GitHub Releases pa
 
 ### Documentation
 
-- Expanded each known limitation with versioned notes describing the mitigation already implemented.
-- Clarified that large-subtree mitigation preserves complete traversal and uses the v1.6 processing indicator rather than node or depth limits.
+- Moved project policies, installation guidance, contribution information, and the changelog into the `docs` directory.
+- Streamlined the README, repositioned known limitations near the related CSS documentation, and added a consolidated project-information section.
 
 ### Fixed
 

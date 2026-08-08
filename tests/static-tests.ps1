@@ -15,7 +15,7 @@ Assert-True (-not $manifest.permissions) "No extension permissions are requested
 $required = @(
     "manifest.json", "devtools.html", "devtools.js", "sidebar/sidebar.html",
     "sidebar/sidebar.css", "sidebar/sidebar.js", "lib/inspector-source.js",
-    "README.md", "CHANGELOG.md", "LICENSE", "CONTRIBUTING.md", "docs/PRIVACY.md", "tests/relevance-tests.html", "tests/state-tests.html", "tests/conditional-tests.html", "tests/tree-cleanup-tests.html", "tests/json-format-tests.html"
+    "README.md", "docs/CHANGELOG.md", "LICENSE", "docs/CONTRIBUTING.md", "docs/PRIVACY.md", "tests/relevance-tests.html", "tests/state-tests.html", "tests/conditional-tests.html", "tests/tree-cleanup-tests.html", "tests/json-format-tests.html"
 )
 foreach ($file in $required) {
     Assert-True (Test-Path (Join-Path $root $file)) "$file exists"
@@ -64,7 +64,7 @@ Assert-True ($outerHtmlPosition -gt $rootElementPosition) "outerHTML is the fina
 $gitignore = Get-Content -Raw (Join-Path $root ".gitignore")
 Assert-True ($gitignore.Contains('/test-result.txt')) "Local test-result.txt is ignored"
 
-$changelog = Get-Content -Raw (Join-Path $root "CHANGELOG.md")
+$changelog = Get-Content -Raw (Join-Path $root "docs/CHANGELOG.md")
 Assert-True ($changelog.Contains('## [1.5.0]') -and $changelog.Contains('## [1.4.0]') -and $changelog.Contains('## [1.3.0]') -and $changelog.Contains('## [1.2.0]') -and $changelog.Contains('## [1.1.0]') -and $changelog.Contains('## [1.0.0]')) "Changelog contains all releases"
 
 $fixture = Get-Content -Raw (Join-Path $root "tests/relevance-tests.html")

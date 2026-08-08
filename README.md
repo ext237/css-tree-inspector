@@ -2,8 +2,8 @@
 
 ![CSS Tree Inspector](icons/CSS%20Tree%20Inspector.png)
 
-[![Version](https://img.shields.io/badge/version-1.6.1-blue)](CHANGELOG.md)
-![Chrome DevTools](https://img.shields.io/badge/Chrome-DevTools-4285F4?logo=googlechrome\&logoColor=white)
+[![Version](https://img.shields.io/badge/version-1.6.1-blue)](docs/CHANGELOG.md)
+![Chrome DevTools](https://img.shields.io/badge/Chrome-DevTools-4285F4?logo=googlechrome&logoColor=white)
 ![Manifest V3](https://img.shields.io/badge/Manifest-V3-5f6368)
 [![License: MIT](https://img.shields.io/github/license/ext237/css-tree-inspector)](LICENSE)
 
@@ -13,7 +13,7 @@
 
 **[Download the latest Chrome-ready release](https://github.com/ext237/css-tree-inspector/releases)**
 
-See [docs/INSTALLATION.md](docs/INSTALLATION.md) for the brief installation instructions.
+See [Installation](docs/INSTALLATION.md) for brief installation instructions.
 
 ## Why CSS Tree Inspector?
 
@@ -44,28 +44,9 @@ All inspection happens locally inside Chrome DevTools.
 * Supports Chrome DevTools light and dark themes.
 * Uses no analytics and makes no network requests.
 
-## Known Limitations
-
-* CSS Tree Inspector captures computed values and relevant authored rules, but does not provide complete stylesheet provenance or every overridden declaration.
-  * **Mitigation (v1.2.0):** Matches accessible authored rules, resolves ordinary cascade priority, and reports final browser-computed values only for relevant properties.
-* Shadow DOM contents are not currently traversed. An encountered open shadow root is noted in JSON.
-  * **Mitigation (v1.0.0):** Detects encountered open shadow roots and explicitly marks them as unsupported instead of silently presenting an incomplete subtree.
-* Inspection inside unusual iframe execution contexts may depend on Chrome DevTools behavior.
-  * **Mitigation (v1.0.0):** Runs through Chrome's inspected-window context and follows the active Elements-panel selection when Chrome exposes that context.
-* Cross-origin stylesheet recovery depends on the stylesheet being available as a Chrome DevTools resource. Unavailable, unsupported, or unparseable resources are reported rather than replaced with a large computed-style dump.
-  * **Mitigation (v1.6.0):** Recovers already-loaded stylesheet content through Chrome DevTools, then reruns focused selector, cascade, state, and conditional-rule analysis without host or debugger permissions.
-* Cascade layers, complex selector specificity, animations, transitions, and browser or user styles can affect computed values in ways that standard page APIs cannot always attribute precisely.
-  * **Mitigation (v1.2.0-v1.4.0):** Resolves ordinary importance, specificity, source order, inheritance, and custom-property dependencies while preserving available state and conditional at-rule context.
-* Selectors unsupported by the current browser, or selectors that cannot be safely analyzed, are skipped rather than forced.
-  * **Mitigation (v1.3.0):** Uses the browser selector engine, structured state-selector analysis, and non-mutating potential matching; unsafe branches are isolated so inspection can continue.
-* Very large DOM subtrees can produce large reports and require additional processing time.
-  * **Mitigation (v1.2.0 and v1.6.0):** Limits output to relevant CSS, omits empty JSON fields, optionally replaces exact duplicate styles with shared `styleDefinitions` references, and displays a processing indicator while generation is underway. Inspection remains complete; CSS Tree Inspector does not truncate the subtree or impose node/depth limits for performance.
-* Generated CSS selectors are readable paths relative to the selected root and are not guaranteed to be globally unique production selectors.
-  * **Mitigation (v1.0.0):** Builds deterministic root-relative paths using tag names, IDs, and classes to keep generated reports readable and internally consistent.
-
 ## Installation
 
-See [docs/INSTALLATION.md](docs/INSTALLATION.md) to install a Chrome-ready release as an unpacked extension.
+See [Installation](docs/INSTALLATION.md) to install a Chrome-ready release as an unpacked extension.
 
 ## Usage
 
@@ -97,7 +78,7 @@ JSON output describes the selected DOM subtree and includes:
 
 The `outerHTML` value is equivalent to Chrome Elements' **Copy outerHTML** result.
 
-When present, `textNodes` is the first property in an element object. Empty optional properties—including text, attributes, computed CSS, state CSS, conditional CSS, pseudo-elements, shadow-root data, and descendant arrays—are omitted rather than emitted with empty or null values.
+When present, `textNodes` is the first property in an element object. Empty optional properties, including text, attributes, computed CSS, state CSS, conditional CSS, pseudo-elements, shadow-root data, and descendant arrays, are omitted rather than emitted with empty or null values.
 
 In combined mode, exact duplicate styles use `computedCSSRef`, `stateCSSRef`, or `conditionalCSSRef`. Definitions receive stable names such as `computed-1` in DOM encounter order. Embedded mode remains the default.
 
@@ -115,7 +96,7 @@ When a relevant declaration uses `var()`, CSS Tree Inspector retains the authore
 
 ## Stateful CSS
 
-Each JSON element includes a `stateCSS` array.
+Each JSON element can include a `stateCSS` array.
 
 `computedCSS` describes the element's current rendered state. `stateCSS` contains authored declarations that could apply under pseudo-class conditions without requiring CSS Tree Inspector to activate those states.
 
@@ -137,11 +118,26 @@ CSS Tree Inspector does not hover, focus, click, toggle, or otherwise modify the
 
 ## Conditional CSS
 
-Each element includes a `conditionalCSS` array containing relevant authored rules nested under `@media` or `@container`. Inactive media rules are retained, and `currentlyMatches` reports current `matchMedia()` applicability. Container-query applicability is left as `null` because standard page APIs do not expose a reliable equivalent. Nested media/container contexts and conditional state selectors are preserved without flattening them into unconditional CSS.
+Each element can include a `conditionalCSS` array containing relevant authored rules nested under `@media` or `@container`.
 
-When page-level CSSOM blocks a stylesheet, CSS Tree Inspector attempts to recover its already-loaded content through Chrome DevTools and reruns the same focused matching and cascade analysis. Stylesheets that remain unavailable are reported once in `corsIssues`; CSS export includes the same diagnostic as a comment.
+Inactive media rules are retained, and `currentlyMatches` reports current `matchMedia()` applicability. Container-query applicability is left as `null` because standard page APIs do not expose a reliable equivalent. Nested media/container contexts and conditional state selectors are preserved without flattening them into unconditional CSS.
+
+When page-level CSSOM blocks a stylesheet, CSS Tree Inspector attempts to recover its already-loaded content through Chrome DevTools and reruns the same focused matching and cascade analysis.
+
+Stylesheets that remain unavailable are reported once in `corsIssues`; CSS export includes the same diagnostic as a comment.
 
 Recovered stylesheets retain active and inactive `@media` rules. Relevant inactive rules remain in `conditionalCSS` with `currentlyMatches: false`; they do not alter the element's current `computedCSS`.
+
+## Known Limitations
+
+* CSS Tree Inspector captures computed values and relevant authored rules, but does not provide complete stylesheet provenance or every overridden declaration.
+* Shadow DOM contents are not currently traversed. An encountered open shadow root is noted in JSON.
+* Inspection inside unusual iframe execution contexts may depend on Chrome DevTools behavior.
+* Cross-origin stylesheet recovery depends on the stylesheet being available as a Chrome DevTools resource.
+* Cascade layers, complex selector specificity, animations, transitions, and browser or user styles can affect computed values in ways that standard page APIs cannot always attribute precisely.
+* Selectors unsupported by the current browser, or selectors that cannot be safely analyzed, are skipped rather than forced.
+* Very large DOM subtrees can produce large reports and require additional processing time.
+* Generated CSS selectors are readable paths relative to the selected root and are not guaranteed to be globally unique production selectors.
 
 ## Privacy
 
@@ -151,54 +147,16 @@ CSS Tree Inspector does not transmit or remotely store inspected page data and r
 
 It does not require Chrome's `debugger` permission.
 
-See [docs/PRIVACY.md](docs/PRIVACY.md) for details.
+See the [Privacy Policy](docs/PRIVACY.md) for details.
 
-CSS Tree Inspector uses plain JavaScript, HTML, and CSS. It has no build step or runtime dependencies.
+## Project Information
 
-Run the structural tests in PowerShell:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\tests\static-tests.ps1
-```
-
-Browser-level tests are available in:
-
-```text
-tests/relevance-tests.html
-tests/state-tests.html
-tests/conditional-tests.html
-```
-
-These tests cover CSS relevance, direct and related state selectors, pseudo-elements, at-rules, structural exclusions, visited links, deduplication, and `outerHTML` behavior.
-
-Regenerate extension icons:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\tools\generate-icons.ps1
-```
-
-Create a versioned Chrome Web Store archive in `dist/`:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\tools\package-release.ps1
-```
-
-
-
-## Contributing
-
-Bug reports and pull requests are welcome.
-
-See [CONTRIBUTING.md](CONTRIBUTING.md).
-
-## Changelog
-
-See [CHANGELOG.md](CHANGELOG.md) for release history and notable changes.
-
-## License
-
-Licensed under the [MIT License](LICENSE).
+* [Installation](docs/INSTALLATION.md)
+* [Changelog](docs/CHANGELOG.md)
+* [Contributing](docs/CONTRIBUTING.md)
+* [Code of Conduct](docs/CODE_OF_CONDUCT.md)
+* [Security Policy](docs/SECURITY.md)
+* [Support](docs/SUPPORT.md)
+* [MIT License](LICENSE)
 
 © 2026 24Moves / Joe Lippeatt / [24moves.com](https://24moves.com)
-
-
