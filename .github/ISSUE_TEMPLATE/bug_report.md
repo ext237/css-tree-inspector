@@ -1,38 +1,51 @@
 ---
 name: Bug report
-about: Create a report to help us improve
-title: ''
-labels: ''
-assignees: ''
-
+about: Report a problem with CSS Tree Inspector
+title: "[Bug] "
+labels: bug
+assignees: 'ext237'
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+## Describe the bug
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+Briefly describe what went wrong in CSS Tree Inspector.
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+## Steps to reproduce
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+1. Open Chrome DevTools
+2. Select the affected element in the Elements panel
+3. Open CSS Tree Inspector
+4. Generate the relevant output
+5. Describe what happened
 
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
+## Expected behavior
 
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
+What did you expect CSS Tree Inspector to do instead?
 
-**Additional context**
-Add any other context about the problem here.
+## Output type
+
+Which output were you generating?
+
+- JSON
+- Referenced JSON
+- CSS
+
+## Environment
+
+- CSS Tree Inspector version:
+- Chrome version:
+- Operating system:
+
+## Problem page
+
+If possible, include the page URL where the issue occurred.
+
+## Screenshots or sample output
+
+Add screenshots or a small relevant section of generated output if useful.
+
+Please remove passwords, tokens, private data, or other sensitive information before posting.
+
+## Additional context
+
+Add anything else that may help reproduce or understand the problem.
